@@ -52,6 +52,19 @@ npm run watch
 uvicorn chatten.app:app --port 6006 --reload
 ```
 
+## Deployment
+
+1. Authenticate with Databricks:
+
+```bash
+databricks auth login -p <profile-name>
+```
+
+2. Deploy the app:
+
+```bash
+make deploy profile=profile-name app_name=app-name path=/Workspace/Users/username@company.com/apps/app-name
+```
 
 ## Implementation details
 

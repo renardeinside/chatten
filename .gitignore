@@ -46,3 +46,4 @@ wheels/
 *.egg
 MANIFEST
 node_modules
+.build/

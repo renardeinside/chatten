@@ -1,4 +1,5 @@
-command: ["uvicorn", "--app-dir", "./src", "chatten.app:app"]
+
+command: ["uvicorn", "chatten.app:app"]
 
 
 env:
