@@ -47,3 +47,5 @@ wheels/
 MANIFEST
 node_modules
 .build/
+
+src/chatten/_version.py
