@@ -23,6 +23,7 @@ dependencies = [
 dev = [
     "build>=1.2.2.post1",
     "dash[dev]>=2.18.2",
+    "pip>=25.0",
     "ruff>=0.9.5",
     "wheel>=0.45.1",
 ]
