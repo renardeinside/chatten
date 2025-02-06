@@ -147,7 +147,6 @@ wheels = [
 
 [[package]]
 name = "chatten"
-version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "chatten-ui" },
