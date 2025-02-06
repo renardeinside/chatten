@@ -10,10 +10,14 @@ import 'react-pdf/dist/Page/TextLayer.css';
 
 import { pdfjs } from 'react-pdf';
 import useTextHighlighter from "../lib/textHighlighter";
+
+// this is to load the worker from the unpkg CDN
+// Dash is not handling the workers correctly and I haven't found a way to make it work
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
 
-const useDimensions = (target) => {
+// this is to catch the dimensions of the container
+const useDimensions = (target: React.MutableRefObject<HTMLDivElement>) => {
     const [width, setWidth] = useState(null);
     const [height, setHeight] = useState(null);
 
@@ -30,19 +34,22 @@ const useDimensions = (target) => {
 };
 
 export default function PdfViewer({ memoizedPdfPointer, initialPageNumber, textToHighlight }) {
+    // this magic is here to make sure PDF stays centered and contained
     const containerRef = useRef<HTMLDivElement>(null);
+    const { height } = useDimensions(containerRef);
+
     const [numPages, setNumPages] = useState<number | null>(null);
     const [pageNumber, setPageNumber] = useState(initialPageNumber);
-    const { height } = useDimensions(containerRef);
     const textHighlighter = useTextHighlighter(textToHighlight);
 
     const onDocumentLoadSuccess = async ({ numPages }: { numPages: number }) => {
         setNumPages(numPages);
     };
+
     return (
         <div >
             {/* Container to ensure the page is centered and contained */}
-            <div ref={containerRef} className="overflow-hidden w-full flex justify-center items-center h-[85vh]">
+            <div ref={containerRef} className="overflow-hidden w-full flex justify-center items-center h-[80vh]">
                 <Document file={memoizedPdfPointer} onLoadSuccess={onDocumentLoadSuccess} onItemClick={({ pageNumber }) => {
                     // set the page number to the clicked page
                     setPageNumber(pageNumber);

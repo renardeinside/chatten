@@ -3,8 +3,6 @@ import ReactMarkdown from 'react-markdown';
 import {
   SendIcon,
   BotIcon,
-  ThumbsUpIcon,
-  ThumbsDownIcon,
   CopyIcon,
   CircleX,
   RotateCw,
@@ -16,6 +14,7 @@ import PdfViewer from "./PdfViewer";
 import Loading from "./Loading";
 
 const Modal = ({ children }) => {
+  // simple Modal implementation based on Tailwind CSS classes
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 h-screen">
       <div className="bg-white p-4 rounded-lg shadow-lg max-w-3xl w-full mx-y relative h-full">
@@ -34,14 +33,21 @@ interface CurrentFileMeta {
 const ChatUI = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState("");
+
+  // probably bad name choice. isLoading is used to show a loading spinner when bot is typing
+  // loadingFile is used to show a loading spinner when a file is being loaded
   const [isLoading, setIsLoading] = useState(false);
+  const [loadingFile, setLoadingFile] = useState(false);
+
   const [pdfContent, setPdfContent] = useState(null);
   const [currentFileMeta, setCurrentFileMeta] = useState<CurrentFileMeta | null>(null);
 
+  // react-pdf requires the pdf content to be memoized to prevent re-rendering
   const memoizedPdfPointer = useMemo(() => ({ data: pdfContent }), [pdfContent]);
 
-  const [loadingFile, setLoadingFile] = useState(false);
 
+
+  // Reference to the bottom of the chat, mainly used for auto-scrolling
   const chatBottomRef = useRef<HTMLDivElement>(null);
 
   // Function to add messages with delay and simulate movement
@@ -61,6 +67,7 @@ const ChatUI = () => {
 
   useEffect(() => {
     // scroll to the bottom of the chat
+    // this effect is triggered whenever there is a new message
     chatBottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
@@ -90,7 +97,7 @@ const ChatUI = () => {
     }
   };
 
-  const handleCopyMessage = (text) => {
+  const handleCopyMessage = (text: string) => {
     navigator.clipboard.writeText(text).then(() => {
       // Optionally, you can show a brief notification that the text was copied
     }, (err) => {
@@ -128,6 +135,9 @@ const ChatUI = () => {
     return (
       <div
         key={index}
+        // this defines the alignment of the message based on the sender
+        // user messages are aligned to the right
+        // bot messages are aligned to the left
         className={`flex ${message.sender === "user" ? "justify-end" : "justify-start"
           } animate-fadeIn`}
       >
@@ -143,13 +153,19 @@ const ChatUI = () => {
           <div className="w-full">
 
             <ReactMarkdown components={{
+              // improves the styping of paragraphs by adding Tailwind CSS class
               p: ({ node, ...props }) => <p className="text-balance" {...props} />
             }}>
               {message.content}
             </ReactMarkdown>
-
+            
             {message.metadata && (
               message.metadata.map((meta, i) => (
+                // for each file we show a button to download the file
+                // if the file occures several times in the message, it will be shown multiple times
+                // each time with a different query
+                // click on the button will trigger the loadFile function
+                // file will be loaded exactly on the page where the query is found
                 <button
                   key={i}
                   onClick={() => loadFile(meta.file_name, meta.content)}

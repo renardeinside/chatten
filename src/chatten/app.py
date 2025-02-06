@@ -35,6 +35,7 @@ api_app = StatefulApp()
 
 dash_app = create_dash_app()
 
+# note: the order of mounting is important!
 app.mount("/api", api_app)
 app.mount("/", WSGIMiddleware(dash_app.server))
 
@@ -43,6 +44,7 @@ class ChatRequest(BaseModel):
     message: str
 
 
+# only used for development, feel free to add if-else switch for production
 api_app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # Allows all origins
@@ -82,6 +84,15 @@ async def chat_with_llm(request: ChatRequest, background_tasks: BackgroundTasks)
         ],
     )
     try:
+        # we expect the incoming response to be a single message with all content packed in it
+        # The JSON will look like this:
+        # [
+        #   {"type": "ai_response", "content": "response content"},
+        #   {"type": "tool_response", "responses": [
+        #       {"metadata": {"file_name": "file.pdf", "year": 2021, "chunk_num": 0, "char_length": 1000}, "content": "retrieved text from file"},
+        #   ]}
+        # ]
+        # the try-catch is implemented because sometimes bot can return an empty response without any content
         messages: list[dict[str, Any]] = json.loads(result.choices[0].message.content)
 
         content = [
@@ -122,6 +133,7 @@ async def chat_with_llm(request: ChatRequest, background_tasks: BackgroundTasks)
 
 @api_app.get("/files")
 def get_files(file_name: str):
+    """Serve file by name (from cache, but will be downloaded if necessary)."""
 
     mime_type, _ = mimetypes.guess_type(file_name)
     mime_type = mime_type or "application/octet-stream"  # Default if unknown
@@ -140,6 +152,7 @@ class RelevantPageReq(BaseModel):
 
 @api_app.post("/files/relevant_page")
 def get_relevant_page(req: RelevantPageReq):
+    """Get the most relevant page for a given query in a file."""
     with api_app.state.file_cache._lock:
         assert (
             req.file_name in api_app.state.file_cache._cache

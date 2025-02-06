@@ -19,11 +19,18 @@ from starlette.datastructures import State
 
 
 class FileContent(BaseModel):
+    """Model to store file content in cache.
+
+    Raw represents the raw bytes of the file.
+    Extracted_pages is a list of strings where each string represents the text extracted from a page of the file.
+    """
+
     raw: bytes
     extracted_pages: list[str]
 
     @property
     def as_io(self) -> BytesIO:
+        """Returns the raw bytes as a BytesIO object. Useful for streaming."""
         return BytesIO(self.raw)
 
     def find_best_match(self, query: str) -> int:
@@ -38,13 +45,19 @@ class FileContent(BaseModel):
 
         if index <= 0:
             logger.warning(f"No relevant pages found for query: {_query}")
-            return 1  # page number starts from 1
+            return 1  # page number starts from 1, return 1 if no relevant page found
 
         logger.info(f"Found relevant page for query: {_query} at index: {index}")
         return index + 1  # page number starts from 1
 
 
 class FileCache:
+    """Cache for storing file contents.
+
+    The cache is a TTLCache with a maximum size and a time-to-live (TTL) for each entry.
+    Cache is thread-safe, and it uses a lock to prevent threading issues.
+    """
+
     def __init__(
         self, client: WorkspaceClient, max_size: int = 100, ttl_in_seconds: int = 3600
     ):
@@ -79,8 +92,8 @@ class FileCache:
         self, path: str, chunk_size: int = 65536
     ) -> Generator[bytes, None, None]:
         """Returns an iterator with file chunks of size 64KB."""
-        # retry 2-3 times if file not in cache
 
+        # retry 2-3 times if file not in cache, usually happens while file is being downloaded
         found = False
         for _ in range(3):
             time.sleep(0.5)
@@ -89,7 +102,9 @@ class FileCache:
                     found = True
                     break
 
-        assert found, f"File {path} not in cache"
+        # if file not found in cache after retries, download it
+        if not found:
+            self.download_file(path)
 
         with self._lock:
             content = self._cache[path]
@@ -98,6 +113,9 @@ class FileCache:
 
 
 class RichState(State):
+    """State class for storing the client and file cache.
+    We're using subclassing to add strong typing.
+    """
 
     def __init__(self, state=None):
         super().__init__(state)
@@ -107,6 +125,12 @@ class RichState(State):
 
 
 class StatefulApp(FastAPI):
+    """FastAPI app with a state object that contains the client and file cache.
+    Again, subclassing is used to add strong typing.
+
+    Note that initialization happens only once, when the app is starting.
+    """
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.state: RichState = RichState()

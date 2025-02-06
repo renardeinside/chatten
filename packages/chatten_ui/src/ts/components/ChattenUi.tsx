@@ -11,6 +11,7 @@ type Props = {
 const ChattenUi = (props: Props) => {
     const { id } = props;
     return (
+        // just a wrapper for the ChatUI component
         <div id={id}>
             <ChatUI />
         </div>
