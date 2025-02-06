@@ -1,2 +1,0 @@
-recursive-include chatten_ui/** *.js *.css *.json *.html
-prune tests

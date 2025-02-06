@@ -1,26 +1,23 @@
 import os
 from pathlib import Path
-from typing import Annotated, Any, BinaryIO, Generator
-from fastapi import Depends, FastAPI
-from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
+from typing import Any
+from fastapi import BackgroundTasks, FastAPI
+from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel
 from chatten.dash_app import create_dash_app
 from fastapi.middleware.wsgi import WSGIMiddleware
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
 from dotenv import load_dotenv
-from databricks.sdk import WorkspaceClient
 from databricks.sdk.service.serving import ChatMessage
 from databricks.sdk.service.serving import ChatMessageRole
-from databricks.sdk.service.files import DownloadResponse
-from databricks.sdk._base_client import _StreamingResponse
-from databricks.sdk.errors.platform import NotFound
 import mimetypes
-
 import json
 
+from chatten.state import StatefulApp
+
+
 app = FastAPI()
-api_app = FastAPI()
 
 dotenv_file = Path(__file__).parent.parent.parent / ".env"
 
@@ -32,11 +29,14 @@ else:
 
 
 ENDPOINT_NAME = os.environ["SERVING_ENDPOINT"]
-VOLUME_PATH = os.environ["VOLUME_PATH"]
 
-# dash_app = create_dash_app()
-# app.mount("/", WSGIMiddleware(dash_app.server))
+
+api_app = StatefulApp()
+
+dash_app = create_dash_app()
+
 app.mount("/api", api_app)
+app.mount("/", WSGIMiddleware(dash_app.server))
 
 
 class ChatRequest(BaseModel):
@@ -52,15 +52,12 @@ api_app.add_middleware(
 )
 
 
-def client() -> WorkspaceClient:
-    return WorkspaceClient()  # App SPN
-
-
 class ApiChatMetadata(BaseModel):
     file_name: str
     year: int | None
     chunk_num: int
     char_length: int
+    content: str
 
 
 class ApiChatResponse(BaseModel):
@@ -70,13 +67,11 @@ class ApiChatResponse(BaseModel):
 
 
 @api_app.post("/chat", response_model=ApiChatResponse)
-async def chat_with_llm(
-    request: ChatRequest, client: Annotated[WorkspaceClient, Depends(client)]
-):
+async def chat_with_llm(request: ChatRequest, background_tasks: BackgroundTasks):
 
     logger.info(f"Received message: {request.message}, using endpoint: {ENDPOINT_NAME}")
 
-    result = client.serving_endpoints.query(
+    result = api_app.state.client.serving_endpoints.query(
         name=ENDPOINT_NAME,
         max_tokens=250,
         messages=[
@@ -105,10 +100,18 @@ async def chat_with_llm(
         )
 
         metadata: list[ApiChatMetadata] = [
-            ApiChatMetadata.model_validate(response.get("metadata"))
+            ApiChatMetadata.model_validate(
+                {**response.get("metadata"), "content": response.get("content")}
+            )
             for response in raw_metadata_responses
             if response.get("metadata")
         ]
+        for meta in metadata:
+            if meta.file_name:
+                # put files in background download and store in cache
+                background_tasks.add_task(
+                    api_app.state.file_cache.download_file, meta.file_name
+                )
 
         return ApiChatResponse(content=content, metadata=metadata)
     except Exception as e:
@@ -118,30 +121,29 @@ async def chat_with_llm(
 
 
 @api_app.get("/files")
-def get_files(file_name: str, client: Annotated[WorkspaceClient, Depends(client)]):
-    full_path = f"{VOLUME_PATH}/{file_name}"
-
-    logger.info(f"Downloading file: {full_path}")
-
-    try:
-        metadata = client.files.get_metadata(full_path)
-    except NotFound:
-        return JSONResponse(status_code=404, content={"error": "File not found"})
-
-    logger.info(f"File metadata: {metadata}")
-
-    response: DownloadResponse = client.files.download(full_path)
-    io: BinaryIO = response.contents
+def get_files(file_name: str):
 
     mime_type, _ = mimetypes.guess_type(file_name)
     mime_type = mime_type or "application/octet-stream"  # Default if unknown
 
-    def iter_file():
-        for chunk in iter(lambda: io.read(1024 * 64), b""):  # Read in 64KB chunks
-            yield chunk
-
     return StreamingResponse(
-        iter_file(),
+        api_app.state.file_cache.get_as_iterable(file_name),
         media_type=mime_type,
         headers={"Content-Disposition": f'attachment; filename="{file_name}"'},
     )
+
+
+class RelevantPageReq(BaseModel):
+    file_name: str
+    query: str
+
+
+@api_app.post("/files/relevant_page")
+def get_relevant_page(req: RelevantPageReq):
+    with api_app.state.file_cache._lock:
+        assert (
+            req.file_name in api_app.state.file_cache._cache
+        ), f"File {req.file_name} not in cache"
+        content = api_app.state.file_cache._cache[req.file_name]
+    page_num = content.find_best_match(req.query)
+    return JSONResponse(content={"page_num": page_num})

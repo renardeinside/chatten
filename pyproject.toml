@@ -3,11 +3,10 @@ name = "chatten"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-authors = [
-    { name = "renardeinside", email = "polarpersonal@gmail.com" }
-]
+authors = [{ name = "renardeinside", email = "polarpersonal@gmail.com" }]
 requires-python = ">=3.10"
 dependencies = [
+    "chatten-ui",
     "dash>=2.18.2",
     "databricks-langchain>=0.2.0",
     "databricks-sdk>=0.43.0",
@@ -16,8 +15,10 @@ dependencies = [
     "langchain>=0.3.17",
     "langchain-community>=0.3.16",
     "loguru>=0.7.3",
+    "pypdf>=5.2.0",
     "python-dotenv>=1.0.1",
     "pyyaml>=6.0.2",
+    "rapidfuzz>=3.12.1",
     "uvicorn>=0.34.0",
 ]
 
@@ -28,5 +29,13 @@ build-backend = "hatchling.build"
 [dependency-groups]
 dev = [
     "build>=1.2.2.post1",
+    "dash[dev]>=2.18.2",
+    "ruff>=0.9.5",
     "wheel>=0.45.1",
 ]
+
+[tool.uv.sources]
+chatten-ui = { workspace = true }
+
+[tool.uv.workspace]
+members = ["packages/*"]
