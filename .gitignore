@@ -13,7 +13,8 @@ wheels/
 
 .ruff_cache/
 
-requirements.txt # this file is not needed and only generated for the sake of sync
+# this file is not needed and only generated for the sake of sync
+requirements.txt
 .databricks
 
 # Mac
