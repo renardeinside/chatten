@@ -1,0 +1,42 @@
+bundle:
+  name: chatten
+
+sync:
+  include:
+    - .build
+
+variables:
+  serving_endpoint:
+    type: string
+    description: The serving endpoint to use
+  volume_path:
+    type: string
+    description: The volume path to use
+  
+
+resources:
+  apps:
+    chatten:
+      name: "chatten"
+      description: "RAG chatbot with sources retriveal and highlighing"
+      source_code_path: ./.build
+      config:
+        command: ["uvicorn", "chatten.app:app"]
+
+        env:
+          - name: "SERVING_ENDPOINT"
+            valueFrom: "serving_endpoint"
+          - name: "VOLUME_PATH"
+            value: ${var.volume_path}
+
+      resources:
+        - name: "serving_endpoint"
+          description: "Serving endpoint for LLM chatbot"
+          serving_endpoint:
+            name: ${var.serving_endpoint}
+            permission: "CAN_QUERY"
+
+targets:
+  dev:
+    mode: development
+    default: true

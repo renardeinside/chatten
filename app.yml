@@ -1,9 +1,0 @@
-
-command: ["uvicorn", "chatten.app:app"]
-
-
-env:
-  - name: "SERVING_ENDPOINT"
-    valueFrom: "serving_endpoint"
-  - name: "VOLUME_PATH"
-    value: "/Volumes/kyra_wulffert/poc_doc_management/raw_docs" # example value, change to your own path!

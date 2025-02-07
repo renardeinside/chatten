@@ -63,9 +63,40 @@ databricks auth login -p <profile-name>
 2. Deploy the app:
 
 ```bash
-make deploy profile=profile-name app_name=app-name path=/Workspace/Users/username@company.com/apps/app-name
+make all \
+    profile=profile-name \
+    serving_endpoint=name-of-the-endpoint \
+    volume_path=/Volumes/...
 ```
 
+## Serving endpoint requirements
+
+The serving endpoint should return the whole response in one single ChatMessage. The response should be a string-encoded JSON array with the following structure:
+```json
+[
+    {
+        "type": "ai_response",
+        "content": "message content"
+    },
+    {
+        "type": "tool_response",
+        "responses": [
+            {
+                "metadata": {
+                    "file_name": "file.pdf",
+                    "year": 2021,
+                    "chunk_num": 0,
+                    "char_length": 1000
+                },
+                "content": "retrieved text from file"
+            },
+        ]
+    }
+]
+```
+
+The `/chat` API endpoint will take care of parsing the response and sending the messages to the chat.
+    
 ## Implementation details
 
 The implementation is based on a FastApi backend, which has two sub-apps:
