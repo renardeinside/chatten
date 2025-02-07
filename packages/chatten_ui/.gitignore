@@ -281,3 +281,6 @@ JuliaManifest.toml
 
 # generated files
 chatten_ui/*
+
+# except the __init__.py file
+!chatten_ui/__init__.py
