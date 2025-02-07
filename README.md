@@ -52,6 +52,12 @@ npm run watch
 uvicorn chatten.app:app --port 6006 --reload
 ```
 
+Prior to running the server, make sure that UI components are generated:
+
+```bash
+cd packages/chatten_ui && npm run build
+```
+
 ## Deployment
 
 1. Authenticate with Databricks:
