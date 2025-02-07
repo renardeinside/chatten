@@ -3,7 +3,6 @@ from pathlib import Path
 from typing import Any
 from fastapi import BackgroundTasks, FastAPI
 from fastapi.responses import JSONResponse, StreamingResponse
-from pydantic import BaseModel
 from chatten.dash_app import create_dash_app
 from fastapi.middleware.wsgi import WSGIMiddleware
 from fastapi.middleware.cors import CORSMiddleware
@@ -14,6 +13,7 @@ from databricks.sdk.service.serving import ChatMessageRole
 import mimetypes
 import json
 
+from chatten.models import ApiChatMetadata, ApiChatResponse, ChatRequest, RelevantPageReq
 from chatten.state import StatefulApp
 
 
@@ -40,10 +40,6 @@ app.mount("/api", api_app)
 app.mount("/", WSGIMiddleware(dash_app.server))
 
 
-class ChatRequest(BaseModel):
-    message: str
-
-
 # only used for development, feel free to add if-else switch for production
 api_app.add_middleware(
     CORSMiddleware,
@@ -52,20 +48,6 @@ api_app.add_middleware(
     allow_methods=["*"],  # Allows all methods
     allow_headers=["*"],  # Allows all headers
 )
-
-
-class ApiChatMetadata(BaseModel):
-    file_name: str
-    year: int | None
-    chunk_num: int
-    char_length: int
-    content: str
-
-
-class ApiChatResponse(BaseModel):
-    content: str
-    metadata: list[ApiChatMetadata]
-    error_happened: bool = False
 
 
 @api_app.post("/chat", response_model=ApiChatResponse)
@@ -143,11 +125,6 @@ def get_files(file_name: str):
         media_type=mime_type,
         headers={"Content-Disposition": f'attachment; filename="{file_name}"'},
     )
-
-
-class RelevantPageReq(BaseModel):
-    file_name: str
-    query: str
 
 
 @api_app.post("/files/relevant_page")
