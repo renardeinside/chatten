@@ -113,3 +113,20 @@ The `/api` app communicates with the Databricks Serving endpoint to get chat req
 The code is structured as follows:
 - main package (`chatten`): contains the FastApi app and the Dash app. Main entrypoint is in `/src/chatten/app.py`.
 - UI package (`packages/chatten_ui`): contains the Dash app and the custom Dash component. The Chat code is in `packages/chatten_ui/src/ts/blocks/Chat.tsx`.
+
+
+## Technologies used 
+
+- [Databricks](https://databricks.com/): Databricks platform
+  - [Databricks Apps](https://www.databricks.com/product/databricks-apps) - app serving
+  - [Databricks Asset Bundles](https://docs.databricks.com/en/dev-tools/bundles/index.html) - deployment
+  - [Mosaic AI Model Serving](https://docs.databricks.com/en/machine-learning/model-serving/index.html) - model serving
+  - [Mosaic AI Vector Search](https://docs.databricks.com/en/generative-ai/vector-search.html) - vector search
+- [Dash](https://dash.plotly.com/): for the UI
+- [FastApi](https://fastapi.tiangolo.com/): for the backend
+- [Tailwind CSS](https://tailwindcss.com/): for styling
+- [react-pdf](https://github.com/wojtekmaj/react-pdf): for rendering PDFs
+- [Fuse.js](https://www.fusejs.io/): client-side fuzzy search in PDFs
+- [pypdf](https://pypdf.readthedocs.io/en/stable/): for extracting text from PDFs on server side
+- [RapidFuzz](https://pypi.org/project/RapidFuzz/): for fuzzy string matching on server side
+- [uv](https://docs.astral.sh/uv/): managing the project
