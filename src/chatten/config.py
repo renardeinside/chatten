@@ -31,7 +31,7 @@ class Config(BaseSettings):
 
     @property
     def volume_path(self) -> PosixPath:
-        return PosixPath("Volumes") / self.catalog / self.db / self.volume
+        return PosixPath("/Volumes") / self.catalog / self.db / self.volume
 
     @property
     def full_raw_docs_path(self) -> PosixPath:
@@ -40,11 +40,12 @@ class Config(BaseSettings):
     @property
     def full_raw_docs_checkpoint_location(self) -> str:
         return (
-            "dbfs:" / self.volume_path / self.raw_docs_checkpoint_location
-        ).as_posix()
+            "dbfs:" + (self.volume_path / self.raw_docs_checkpoint_location).as_posix()
+        )
 
     @property
     def full_processed_docs_checkpoint_location(self) -> str:
         return (
-            "dbfs:" / self.volume_path / self.processed_docs_checkpoint_location
-        ).as_posix()
+            "dbfs:"
+            + (self.volume_path / self.processed_docs_checkpoint_location).as_posix()
+        )
