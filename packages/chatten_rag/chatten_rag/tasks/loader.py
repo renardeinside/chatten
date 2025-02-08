@@ -52,14 +52,17 @@ class Loader(Task[Config]):
             collections.deque(executor.map(downloader, files))
 
     def process_files_into_table(self):
+        source_path = "dbfs:" + self.config.full_raw_docs_path.as_posix()
+
         self.logger.info(
-            "Processing files into raw docs registry {self.config.raw_docs_registry}"
+            f"Processing files into raw docs registry {self.config.raw_docs_registry} from {source_path}"
         )
+
         df = (
             self.spark.readStream.format("cloudFiles")
             .option("cloudFiles.format", "BINARYFILE")
             .option("pathGlobFilter", "*.pdf")
-            .load(("dbfs:" / self.config.full_raw_docs_path).as_posix())
+            .load(source_path)
         )
 
         query = (
@@ -73,7 +76,9 @@ class Loader(Task[Config]):
 
         query.awaitTermination()
 
-        self.logger.info(f"Finished processing files into {self.config.raw_docs_registry}")
+        self.logger.info(
+            f"Finished processing files into {self.config.raw_docs_registry}"
+        )
 
     def run(self):
         self.logger.info(
