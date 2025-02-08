@@ -13,14 +13,18 @@ import pandas as pd
 
 
 @pandas_udf("string")
-def parse_bytes_pypdf(
-    raw_doc_contents_bytes: Iterator[pd.Series],
-) -> Iterator[pd.Series]:
-    for raw_doc_contents in raw_doc_contents_bytes:
-        with io.BytesIO(raw_doc_contents) as f:
-            reader = PdfReader(f)
-            text = "\n".join([page.extract_text() for page in reader.pages])
-            yield pd.Series(text)
+def extract_text_from_pdf(binary_content: pd.Series) -> pd.Series:
+    def extract_text(pdf_bytes):
+        try:
+            reader = PdfReader(io.BytesIO(pdf_bytes))
+            text = []
+            for page in reader.pages:
+                text.append(page.extract_text())
+            return "\n".join(text)
+        except Exception as e:
+            return f"_____PDF_PARSE_ERROR: {e}_____"
+
+    return binary_content.apply(extract_text)
 
 
 class Loader(Task[Config]):
@@ -82,7 +86,7 @@ class Loader(Task[Config]):
         )
 
         query = (
-            df.withColumn("text", parse_bytes_pypdf(df.content))
+            df.withColumn("text", extract_text_from_pdf(df.content))
             .writeStream.trigger(availableNow=True)
             .option(
                 "checkpointLocation",

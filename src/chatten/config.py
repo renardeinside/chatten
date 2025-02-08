@@ -23,6 +23,9 @@ class Config(BaseSettings):
     # table names
     raw_docs_registry: str = "raw_docs_registry"
 
+    # endpoints
+    chunking_endpoint: str = "databricks-meta-llama-3-1-70b-instruct"
+
     model_config = SettingsConfigDict(
         env_nested_delimiter="__",  # for nested configuration
         env_prefix="CHATTEN_",  # for app-based configuration
