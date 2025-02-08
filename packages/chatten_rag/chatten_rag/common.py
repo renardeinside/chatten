@@ -6,6 +6,7 @@ from chatten.config import Config
 
 T = TypeVar("T", bound=Config)
 
+
 class Task(ABC, Generic[T]):
     config_class: T
 
@@ -23,5 +24,12 @@ class Task(ABC, Generic[T]):
         logger.info(f"Running {cls.__name__}")
         instance = cls()
         logger.info(f"Config: {instance.config}")
+
+        logger.info("Setting catalog to {instance.config.catalog}")
+        instance.spark.sql(f"USE CATALOG {instance.config.catalog}")
+
+        logger.info("Setting database to {instance.config.db}")
+        instance.spark.sql(f"USE SCHEMA {instance.config.db}")
+
         instance.run()
         logger.info(f"Finished running {cls.__name__}")

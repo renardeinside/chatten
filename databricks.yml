@@ -12,12 +12,9 @@ artifacts:
     build: rm -rf dist && uv build --wheel --package chatten && uv build --wheel --package chatten_rag
    
 variables:
-  serving_endpoint:
+  catalog:
     type: string
-    description: The serving endpoint to use
-  volume_path:
-    type: string
-    description: The volume path to use
+    description: The catalog to use
   
 
 resources:
