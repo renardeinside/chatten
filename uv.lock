@@ -15,6 +15,7 @@ resolution-markers = [
 members = [
     "chatten",
     "chatten-app",
+    "chatten-rag",
     "chatten-ui",
 ]
 
@@ -203,20 +204,57 @@ dev = [
 
 [[package]]
 name = "chatten-app"
+version = "0.1.dev17+g3c9414f.d20250208"
 source = { editable = "packages/chatten_app" }
 dependencies = [
     { name = "chatten" },
     { name = "chatten-ui" },
+    { name = "dash" },
+    { name = "databricks-sdk" },
+    { name = "fastapi" },
+    { name = "pypdf" },
+    { name = "python-dotenv" },
+    { name = "pyyaml" },
+    { name = "rapidfuzz" },
+    { name = "uvicorn" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "chatten", editable = "." },
     { name = "chatten-ui", editable = "packages/chatten_ui" },
+    { name = "dash", specifier = ">=2.18.2" },
+    { name = "databricks-sdk", specifier = ">=0.43.0" },
+    { name = "fastapi", specifier = ">=0.115.8" },
+    { name = "pypdf", specifier = ">=5.2.0" },
+    { name = "python-dotenv", specifier = ">=1.0.1" },
+    { name = "pyyaml", specifier = ">=6.0.2" },
+    { name = "rapidfuzz", specifier = ">=3.12.1" },
+    { name = "uvicorn", specifier = ">=0.34.0" },
 ]
 
 [[package]]
+name = "chatten-rag"
+version = "0.1.dev17+g3c9414f.d20250208"
+source = { editable = "packages/chatten_rag" }
+dependencies = [
+    { name = "chatten" },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "pyspark" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "chatten", editable = "." }]
+
+[package.metadata.requires-dev]
+dev = [{ name = "pyspark", specifier = ">=3.5.4" }]
+
+[[package]]
 name = "chatten-ui"
+version = "0.1.dev17+g3c9414f.d20250208"
 source = { editable = "packages/chatten_ui" }
 dependencies = [
     { name = "dash", extra = ["dev"] },
@@ -827,6 +865,15 @@ wheels = [
 ]
 
 [[package]]
+name = "py4j"
+version = "0.10.9.7"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/1e/f2/b34255180c72c36ff7097f7c2cdca02abcbd89f5eebf7c7c41262a9a0637/py4j-0.10.9.7.tar.gz", hash = "sha256:0b6e5315bb3ada5cf62ac651d107bb2ebc02def3dee9d9548e3baac644ea8dbb", size = 1508234 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/10/30/a58b32568f1623aaad7db22aa9eafc4c6c194b429ff35bdc55ca2726da47/py4j-0.10.9.7-py2.py3-none-any.whl", hash = "sha256:85defdfd2b2376eb3abf5ca6474b51ab7e0de341c75a02f46dc9b5976f5a5c1b", size = 200481 },
+]
+
+[[package]]
 name = "pyasn1"
 version = "0.6.1"
 source = { registry = "https://pypi.org/simple" }
@@ -987,6 +1034,15 @@ sdist = { url = "https://files.pythonhosted.org/packages/0f/49/4cea918a08f02817a
 wheels = [
     { url = "https://files.pythonhosted.org/packages/5a/dc/491b7661614ab97483abf2056be1deee4dc2490ecbf7bff9ab5cdbac86e1/pyreadline3-3.5.4-py3-none-any.whl", hash = "sha256:eaf8e6cc3c49bcccf145fc6067ba8643d1df34d604a1ec0eccbf7a18e6d3fae6", size = 83178 },
 ]
+
+[[package]]
+name = "pyspark"
+version = "3.5.4"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "py4j" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/4e/18/6bb8c4e857122fc898f32336cb6e9e98415a7802c2a3738e907b4bd60953/pyspark-3.5.4.tar.gz", hash = "sha256:1c2926d63020902163f58222466adf6f8016f6c43c1f319b8e7a71dbaa05fc51", size = 317313656 }
 
 [[package]]
 name = "python-dateutil"

@@ -5,12 +5,12 @@ sync:
   include:
     - .build
 
-# artifacts:
-#   default:
-#     type: whl
-#     path: .
-#     build: hatch build -t wheel
-    
+artifacts:
+  default:
+    type: whl
+    path: .
+    build: rm -rf dist && uv build --wheel --package chatten && uv build --wheel --package chatten_rag
+   
 variables:
   serving_endpoint:
     type: string
@@ -21,26 +21,49 @@ variables:
   
 
 resources:
-  apps:
-    chatten:
-      name: "chatten"
-      description: "RAG chatbot with sources retriveal and highlighing"
-      source_code_path: ./.build
-      config:
-        command: ["uvicorn", "chatten_app.app:app"]
+  # apps:
+  #   chatten:
+  #     name: "chatten"
+  #     description: "RAG chatbot with sources retriveal and highlighing"
+  #     source_code_path: ./.build
+  #     config:
+  #       command: ["uvicorn", "chatten_app.app:app"]
 
-        env:
-          - name: "CHATTEN_SERVING_ENDPOINT"
-            valueFrom: "serving_endpoint"
-          - name: "CHATTEN_VOLUME_PATH"
-            value: ${var.volume_path}
+  #       env:
+  #         - name: "CHATTEN_SERVING_ENDPOINT"
+  #           valueFrom: "serving_endpoint"
+  #         - name: "CHATTEN_VOLUME_PATH"
+  #           value: ${var.volume_path}
 
-      resources:
-        - name: "serving_endpoint"
-          description: "Serving endpoint for LLM chatbot"
-          serving_endpoint:
-            name: ${var.serving_endpoint}
-            permission: "CAN_QUERY"
+  #     resources:
+  #       - name: "serving_endpoint"
+  #         description: "Serving endpoint for LLM chatbot"
+  #         serving_endpoint:
+  #           name: ${var.serving_endpoint}
+  #           permission: "CAN_QUERY"
+  jobs:
+    chatten_rag:
+      name: chatten_rag
+
+      tasks:
+        - task_key: loader
+          max_retries: 0
+          disable_auto_optimization: true
+          python_wheel_task:
+            package_name: chatten_rag
+            entry_point: loader
+            parameters:
+              - "--volume_path=${var.volume_path}"
+              - "--serving_endpoint=${var.serving_endpoint}"
+
+          environment_key: Default
+
+      environments:
+        - environment_key: Default
+          spec:
+            client: "1"
+            dependencies:
+              - ./dist/*.whl
 
 targets:
   dev:

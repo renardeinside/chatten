@@ -11,6 +11,7 @@ class Config(BaseSettings):
     volume_path: PosixPath
     serving_endpoint: str
 
-    model_config = SettingsConfigDict(env_prefix="CHATTEN_")
-
-
+    model_config = SettingsConfigDict(
+        env_prefix="CHATTEN_",  # for app-based configuration
+        cli_parse_args=True # for command-line based configuration
+    )

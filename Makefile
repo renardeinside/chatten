@@ -5,11 +5,11 @@ build-app:
 
 
 
-deploy-app: 
+deploy:
 	databricks -p $(profile) \
 		bundle deploy \
 			--var="serving_endpoint=$(serving_endpoint)" \
-			--var="volume_path=$(volume_path)" \
+			--var="volume_path=$(volume_path)"
 		
 
 run-app:
@@ -18,4 +18,10 @@ run-app:
 			--var="serving_endpoint=$(serving_endpoint)" \
 			--var="volume_path=$(volume_path)"
 
-all-app: build-app deploy-app run-app
+all-app: build-app deploy run-app
+
+run-rag:
+	databricks -p $(profile) \
+		bundle run chatten_rag \
+			--var="serving_endpoint=$(serving_endpoint)" \
+			--var="volume_path=$(volume_path)"
