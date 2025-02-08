@@ -1,6 +1,5 @@
 from pathlib import Path, PosixPath
 from loguru import logger
-from pydantic import BaseModel
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 env_file = Path(__file__).parent.parent.parent / ".env"
@@ -32,7 +31,7 @@ class Config(BaseSettings):
 
     @property
     def volume_path(self) -> PosixPath:
-        return PosixPath(self.volume)
+        return PosixPath("Volumes") / self.catalog / self.db / self.volume
 
     @property
     def full_raw_docs_path(self) -> PosixPath:

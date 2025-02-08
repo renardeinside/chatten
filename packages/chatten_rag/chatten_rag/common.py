@@ -28,14 +28,14 @@ class Task(ABC, Generic[T]):
         instance = cls()
         logger.info(f"Config: {instance.config.model_dump_json(indent=4)}")
 
-        logger.info("Setting catalog to {instance.config.catalog}")
+        logger.info(f"Setting catalog to {instance.config.catalog}")
         instance.spark.sql(f"USE CATALOG {instance.config.catalog}")
 
-        logger.info("Setting database to {instance.config.db}")
+        logger.info(f"Setting database to {instance.config.db}")
         instance.spark.sql(f"CREATE DATABASE IF NOT EXISTS {instance.config.db}")
         instance.spark.sql(f"USE DATABASE {instance.config.db}")
 
-        logger.info("Setting the volume to {instance.config.volume}")
+        logger.info(f"Setting the volume to {instance.config.volume}")
         instance.spark.sql(f"CREATE VOLUME IF NOT EXISTS {instance.config.volume}")
 
         instance.run()

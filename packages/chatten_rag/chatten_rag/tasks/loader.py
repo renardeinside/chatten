@@ -52,6 +52,9 @@ class Loader(Task[Config]):
             collections.deque(executor.map(downloader, files))
 
     def process_files_into_table(self):
+        self.logger.info(
+            "Processing files into raw docs registry {self.config.raw_docs_registry}"
+        )
         df = (
             self.spark.readStream.format("cloudFiles")
             .option("cloudFiles.format", "BINARYFILE")
@@ -70,6 +73,8 @@ class Loader(Task[Config]):
 
         query.awaitTermination()
 
+        self.logger.info(f"Finished processing files into {self.config.raw_docs_registry}")
+
     def run(self):
         self.logger.info(
             f"Downloading files from git into {self.config.full_raw_docs_path}"
@@ -82,7 +87,4 @@ class Loader(Task[Config]):
         )
         self.logger.info("Finished downloading files")
 
-        self.logger.info(
-            "Processing files into raw docs registry {self.config.raw_docs_registry}"
-        )
         self.process_files_into_table()
