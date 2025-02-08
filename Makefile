@@ -25,3 +25,5 @@ run-rag:
 		bundle run chatten_rag \
 			--var="serving_endpoint=$(serving_endpoint)" \
 			--var="volume_path=$(volume_path)"
+
+all-rag: deploy run-rag
