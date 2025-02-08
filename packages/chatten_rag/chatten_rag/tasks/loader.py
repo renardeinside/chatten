@@ -50,5 +50,8 @@ class Loader(Task[Config]):
     def run(self):
         self.logger.info("Downloading files from git")
         self.download_file_from_git(
-            self.config.volume_path, "databricks-demos", "dbdemos-dataset", "/"
+            self.config.volume_path,
+            "databricks-demos",
+            "dbdemos-dataset",
+            "/llm/databricks-pdf-documentation",
         )

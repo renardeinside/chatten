@@ -149,6 +149,7 @@ wheels = [
 
 [[package]]
 name = "chatten"
+version = "0.1.dev18+g23ad847.d20250208"
 source = { editable = "." }
 dependencies = [
     { name = "loguru" },
