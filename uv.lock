@@ -215,10 +215,10 @@ requires-dist = [
 
 [[package]]
 name = "chatten-rag"
-version = "0.1.dev17+g3c9414f.d20250208"
 source = { editable = "packages/chatten_rag" }
 dependencies = [
     { name = "chatten" },
+    { name = "databricks-sdk" },
 ]
 
 [package.dev-dependencies]
@@ -227,7 +227,10 @@ dev = [
 ]
 
 [package.metadata]
-requires-dist = [{ name = "chatten", editable = "." }]
+requires-dist = [
+    { name = "chatten", editable = "." },
+    { name = "databricks-sdk", specifier = ">=0.43.0" },
+]
 
 [package.metadata.requires-dev]
 dev = [{ name = "pyspark", specifier = ">=3.5.4" }]

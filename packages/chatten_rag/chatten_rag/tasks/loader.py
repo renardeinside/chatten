@@ -56,7 +56,7 @@ class Loader(Task[Config]):
             self.spark.readStream.format("cloudFiles")
             .option("cloudFiles.format", "BINARYFILE")
             .option("pathGlobFilter", "*.pdf")
-            .load("dbfs:" + self.config.volume_path.as_posix())
+            .load(("dbfs:" / self.config.full_raw_docs_path).as_posix())
         )
 
         query = (
@@ -71,7 +71,9 @@ class Loader(Task[Config]):
         query.awaitTermination()
 
     def run(self):
-        self.logger.info(f"Downloading files from git into {self.config.full_raw_docs_path}")
+        self.logger.info(
+            f"Downloading files from git into {self.config.full_raw_docs_path}"
+        )
         self.download_file_from_git(
             self.config.full_raw_docs_path,
             "databricks-demos",
@@ -80,5 +82,7 @@ class Loader(Task[Config]):
         )
         self.logger.info("Finished downloading files")
 
-        self.logger.info("Processing files into raw docs registry {self.config.raw_docs_registry}")
+        self.logger.info(
+            "Processing files into raw docs registry {self.config.raw_docs_registry}"
+        )
         self.process_files_into_table()

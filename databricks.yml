@@ -50,8 +50,7 @@ resources:
             package_name: chatten_rag
             entry_point: loader
             parameters:
-              - "--volume_path=${var.volume_path}"
-              - "--serving_endpoint=${var.serving_endpoint}"
+              - "--catalog=${var.catalog}"
 
           environment_key: Default
 

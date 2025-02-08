@@ -3,6 +3,8 @@ from typing import Generic, TypeVar
 from pyspark.sql import SparkSession
 from loguru import logger
 from chatten.config import Config
+from databricks.sdk import WorkspaceClient
+from databricks.sdk.errors import NotFound
 
 T = TypeVar("T", bound=Config)
 
@@ -14,6 +16,7 @@ class Task(ABC, Generic[T]):
         self.spark: SparkSession = SparkSession.builder.getOrCreate()
         self.logger = logger
         self.config: T = self.config_class()
+        self.client = WorkspaceClient()
 
     @abstractmethod
     def run(self):
@@ -23,13 +26,17 @@ class Task(ABC, Generic[T]):
     def entrypoint(cls):
         logger.info(f"Running {cls.__name__}")
         instance = cls()
-        logger.info(f"Config: {instance.config}")
+        logger.info(f"Config: {instance.config.model_dump_json(indent=4)}")
 
         logger.info("Setting catalog to {instance.config.catalog}")
         instance.spark.sql(f"USE CATALOG {instance.config.catalog}")
 
         logger.info("Setting database to {instance.config.db}")
-        instance.spark.sql(f"USE SCHEMA {instance.config.db}")
+        instance.spark.sql(f"CREATE DATABASE IF NOT EXISTS {instance.config.db}")
+        instance.spark.sql(f"USE DATABASE {instance.config.db}")
+
+        logger.info("Setting the volume to {instance.config.volume}")
+        instance.spark.sql(f"CREATE VOLUME IF NOT EXISTS {instance.config.volume}")
 
         instance.run()
         logger.info(f"Finished running {cls.__name__}")
