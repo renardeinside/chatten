@@ -1,6 +1,7 @@
 import collections
 from functools import partial
 from pathlib import PosixPath
+from typing import Iterator
 import requests
 from chatten.config import Config
 from chatten_rag.common import Task
@@ -8,14 +9,18 @@ from concurrent.futures import ThreadPoolExecutor
 import io
 from pypdf import PdfReader
 from pyspark.sql.functions import pandas_udf
+import pandas as pd
 
 
 @pandas_udf("string")
-def parse_bytes_pypdf(raw_doc_contents_bytes: bytes):
-    pdf = io.BytesIO(raw_doc_contents_bytes)
-    reader = PdfReader(pdf)
-    parsed_content = [page_content.extract_text() for page_content in reader.pages]
-    return "\n".join(parsed_content)
+def parse_bytes_pypdf(
+    raw_doc_contents_bytes: Iterator[pd.Series],
+) -> Iterator[pd.Series]:
+    for raw_doc_contents in raw_doc_contents_bytes:
+        with io.BytesIO(raw_doc_contents) as f:
+            reader = PdfReader(f)
+            text = "\n".join([page.extract_text() for page in reader.pages])
+            yield pd.Series(text)
 
 
 class Loader(Task[Config]):
@@ -77,8 +82,7 @@ class Loader(Task[Config]):
         )
 
         query = (
-            df
-            .withColumn("text", parse_bytes_pypdf(df.content))
+            df.withColumn("text", parse_bytes_pypdf(df.content))
             .writeStream.trigger(availableNow=True)
             .option(
                 "checkpointLocation",
