@@ -3,13 +3,6 @@ import { Message } from "./types";
 
 const apiClient = axios.create({});
 
-
-if (process.env.NODE_ENV === "development") {
-    apiClient.defaults.baseURL = "http://localhost:6006/api";
-} else {
-    apiClient.defaults.baseURL = "/api";
-}
-
 export const api = {
     chat: {
         send: async (message: string) => {

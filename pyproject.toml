@@ -12,6 +12,7 @@ dependencies = [
     "databricks-sql-connector>=4.0.0",
     "fastapi>=0.115.8",
     "loguru>=0.7.3",
+    "pydantic-settings>=2.7.1",
     "pypdf>=5.2.0",
     "python-dotenv>=1.0.1",
     "pyyaml>=6.0.2",

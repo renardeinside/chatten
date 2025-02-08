@@ -5,6 +5,12 @@ sync:
   include:
     - .build
 
+# artifacts:
+#   default:
+#     type: whl
+#     path: .
+#     build: hatch build -t wheel
+    
 variables:
   serving_endpoint:
     type: string

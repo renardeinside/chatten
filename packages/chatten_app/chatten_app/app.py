@@ -1,37 +1,26 @@
-import os
-from pathlib import Path
+from pathlib import PosixPath
 from typing import Any
 from fastapi import BackgroundTasks, FastAPI
 from fastapi.responses import JSONResponse, StreamingResponse
-from chatten.dash_app import create_dash_app
+from chatten_app.dash_app import create_dash_app
 from fastapi.middleware.wsgi import WSGIMiddleware
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
-from dotenv import load_dotenv
 from databricks.sdk.service.serving import ChatMessage
 from databricks.sdk.service.serving import ChatMessageRole
 import mimetypes
 import json
 
-from chatten.models import ApiChatMetadata, ApiChatResponse, ChatRequest, RelevantPageReq
-from chatten.state import StatefulApp
+from chatten_app.models import (
+    ApiChatMetadata,
+    ApiChatResponse,
+    ChatRequest,
+    RelevantPageReq,
+)
+from chatten_app.api_app import api_app
 
 
 app = FastAPI()
-
-dotenv_file = Path(__file__).parent.parent.parent / ".env"
-
-if dotenv_file.exists():
-    logger.info(f"Loading environment variables from {dotenv_file}")
-    load_dotenv(dotenv_file)
-else:
-    logger.info(f"Environment variables file not found: {dotenv_file}")
-
-
-ENDPOINT_NAME = os.environ["SERVING_ENDPOINT"]
-
-
-api_app = StatefulApp()
 
 dash_app = create_dash_app()
 
@@ -53,10 +42,12 @@ api_app.add_middleware(
 @api_app.post("/chat", response_model=ApiChatResponse)
 async def chat_with_llm(request: ChatRequest, background_tasks: BackgroundTasks):
 
-    logger.info(f"Received message: {request.message}, using endpoint: {ENDPOINT_NAME}")
+    logger.info(
+        f"Received message: {request.message}, using endpoint: {api_app.state.config.serving_endpoint}"
+    )
 
     result = api_app.state.client.serving_endpoints.query(
-        name=ENDPOINT_NAME,
+        name=api_app.state.config.serving_endpoint,
         max_tokens=250,
         messages=[
             ChatMessage(
@@ -114,16 +105,16 @@ async def chat_with_llm(request: ChatRequest, background_tasks: BackgroundTasks)
 
 
 @api_app.get("/files")
-def get_files(file_name: str):
+def get_files(file_name: PosixPath):
     """Serve file by name (from cache, but will be downloaded if necessary)."""
 
-    mime_type, _ = mimetypes.guess_type(file_name)
+    mime_type, _ = mimetypes.guess_type(file_name.as_posix())
     mime_type = mime_type or "application/octet-stream"  # Default if unknown
 
     return StreamingResponse(
         api_app.state.file_cache.get_as_iterable(file_name),
         media_type=mime_type,
-        headers={"Content-Disposition": f'attachment; filename="{file_name}"'},
+        headers={"Content-Disposition": f'attachment; filename="{file_name.as_posix()}"'},
     )
 
 

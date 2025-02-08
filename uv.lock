@@ -14,6 +14,7 @@ resolution-markers = [
 [manifest]
 members = [
     "chatten",
+    "chatten-app",
     "chatten-ui",
 ]
 
@@ -147,6 +148,7 @@ wheels = [
 
 [[package]]
 name = "chatten"
+version = "0.1.dev13+g6d72aa5.d20250207"
 source = { editable = "." }
 dependencies = [
     { name = "chatten-ui" },
@@ -155,6 +157,7 @@ dependencies = [
     { name = "databricks-sql-connector" },
     { name = "fastapi" },
     { name = "loguru" },
+    { name = "pydantic-settings" },
     { name = "pypdf" },
     { name = "python-dotenv" },
     { name = "pyyaml" },
@@ -180,6 +183,7 @@ requires-dist = [
     { name = "databricks-sql-connector", specifier = ">=4.0.0" },
     { name = "fastapi", specifier = ">=0.115.8" },
     { name = "loguru", specifier = ">=0.7.3" },
+    { name = "pydantic-settings", specifier = ">=2.7.1" },
     { name = "pypdf", specifier = ">=5.2.0" },
     { name = "python-dotenv", specifier = ">=1.0.1" },
     { name = "pyyaml", specifier = ">=6.0.2" },
@@ -196,6 +200,16 @@ dev = [
     { name = "typer", specifier = ">=0.15.1" },
     { name = "wheel", specifier = ">=0.45.1" },
 ]
+
+[[package]]
+name = "chatten-app"
+source = { editable = "packages/chatten_app" }
+dependencies = [
+    { name = "chatten" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "chatten", editable = "." }]
 
 [[package]]
 name = "chatten-ui"
@@ -875,6 +889,19 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/86/aa/837821ecf0c022bbb74ca132e117c358321e72e7f9702d1b6a03758545e2/pydantic_core-2.27.2-pp310-pypy310_pp73-musllinux_1_1_armv7l.whl", hash = "sha256:0296abcb83a797db256b773f45773da397da75a08f5fcaef41f2044adec05f50", size = 2116582 },
     { url = "https://files.pythonhosted.org/packages/81/b0/5e74656e95623cbaa0a6278d16cf15e10a51f6002e3ec126541e95c29ea3/pydantic_core-2.27.2-pp310-pypy310_pp73-musllinux_1_1_x86_64.whl", hash = "sha256:0d75070718e369e452075a6017fbf187f788e17ed67a3abd47fa934d001863d9", size = 2151985 },
     { url = "https://files.pythonhosted.org/packages/63/37/3e32eeb2a451fddaa3898e2163746b0cffbbdbb4740d38372db0490d67f3/pydantic_core-2.27.2-pp310-pypy310_pp73-win_amd64.whl", hash = "sha256:7e17b560be3c98a8e3aa66ce828bdebb9e9ac6ad5466fba92eb74c4c95cb1151", size = 2004715 },
+]
+
+[[package]]
+name = "pydantic-settings"
+version = "2.7.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "pydantic" },
+    { name = "python-dotenv" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/73/7b/c58a586cd7d9ac66d2ee4ba60ca2d241fa837c02bca9bea80a9a8c3d22a9/pydantic_settings-2.7.1.tar.gz", hash = "sha256:10c9caad35e64bfb3c2fbf70a078c0e25cc92499782e5200747f942a065dec93", size = 79920 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/b4/46/93416fdae86d40879714f72956ac14df9c7b76f7d41a4d68aa9f71a0028b/pydantic_settings-2.7.1-py3-none-any.whl", hash = "sha256:590be9e6e24d06db33a4262829edef682500ef008565a969c73d39d5f8bfb3fd", size = 29718 },
 ]
 
 [[package]]

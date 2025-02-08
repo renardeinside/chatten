@@ -1,17 +1,16 @@
-from pathlib import PosixPath
-from pydantic import BaseModel
+from pathlib import Path, PosixPath
+from loguru import logger
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+env_file = Path(__file__).parent.parent.parent / ".env"
+
+if env_file.exists():
+    logger.info(f"Using environment file: {env_file}")
+
+class Config(BaseSettings):
+    volume_path: PosixPath
+    serving_endpoint: str
+
+    model_config = SettingsConfigDict(env_prefix="CHATTEN_")
 
 
-class Volume(BaseModel):
-    catalog: str
-    schema: str 
-    name: str
-
-    @property
-    def as_path(self) -> PosixPath:
-        return PosixPath(f"{self.catalog}/{self.schema}/{self.name}")
-
-
-class Config(BaseModel):
-    serving_endpoint_name: str
-    volume: Volume

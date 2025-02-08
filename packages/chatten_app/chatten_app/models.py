@@ -1,3 +1,4 @@
+from pathlib import PosixPath
 from pydantic import BaseModel
 
 
@@ -6,7 +7,7 @@ class ChatRequest(BaseModel):
 
 
 class ApiChatMetadata(BaseModel):
-    file_name: str
+    file_name: PosixPath
     year: int | None
     chunk_num: int
     char_length: int
@@ -20,5 +21,5 @@ class ApiChatResponse(BaseModel):
 
 
 class RelevantPageReq(BaseModel):
-    file_name: str
+    file_name: PosixPath
     query: str

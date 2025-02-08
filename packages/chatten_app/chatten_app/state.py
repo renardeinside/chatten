@@ -1,21 +1,21 @@
 from cachetools import TTLCache
 from databricks.sdk import WorkspaceClient
 from databricks.sdk.service.files import DownloadResponse
-from fastapi import FastAPI
 from pypdf import PdfReader
-from pathlib import PurePath
+from pathlib import PosixPath
 from threading import Lock
 from typing import Generator
 import rapidfuzz
 from loguru import logger
 from pydantic import BaseModel
-import os
 import time
 import functools
 
 from io import BytesIO
 
 from starlette.datastructures import State
+
+from chatten.config import Config
 
 
 class FileContent(BaseModel):
@@ -59,18 +59,22 @@ class FileCache:
     """
 
     def __init__(
-        self, client: WorkspaceClient, max_size: int = 100, ttl_in_seconds: int = 3600
+        self,
+        client: WorkspaceClient,
+        volume_path: PosixPath,
+        max_size: int = 100,
+        ttl_in_seconds: int = 3600,
     ):
-        self._cache: TTLCache[str, FileContent] = TTLCache(
+        self._cache: TTLCache[PosixPath, FileContent] = TTLCache(
             maxsize=max_size, ttl=ttl_in_seconds
         )  # Auto eviction after TTL
         self._client = client
-        self._volume_path = PurePath(os.environ["VOLUME_PATH"])
+        self._volume_path = volume_path
 
         # we need lock to prevent threading issues
         self._lock = Lock()
 
-    def download_file(self, path: str) -> None:
+    def download_file(self, path: PosixPath) -> None:
         with self._lock:
             if path not in self._cache:
                 full_path = self._volume_path / path
@@ -89,7 +93,7 @@ class FileCache:
                 logger.info(f"File {path} already in cache, skipping download")
 
     def get_as_iterable(
-        self, path: str, chunk_size: int = 65536
+        self, path: PosixPath, chunk_size: int = 65536
     ) -> Generator[bytes, None, None]:
         """Returns an iterator with file chunks of size 64KB."""
 
@@ -112,25 +116,17 @@ class FileCache:
         return iter(functools.partial(content.as_io.read, chunk_size), b"")
 
 
-class RichState(State):
+class AppState(State):
     """State class for storing the client and file cache.
     We're using subclassing to add strong typing.
     """
 
     def __init__(self, state=None):
         super().__init__(state)
-        logger.info("Creating state")
+        self.config = Config()
+        logger.info(f"Config: {self.config.model_dump_json(indent=4)}")
         self.client = WorkspaceClient()
-        self.file_cache = FileCache(self.client)
+        self.file_cache = FileCache(self.client, self.config.volume_path.as_posix())
 
 
-class StatefulApp(FastAPI):
-    """FastAPI app with a state object that contains the client and file cache.
-    Again, subclassing is used to add strong typing.
 
-    Note that initialization happens only once, when the app is starting.
-    """
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.state: RichState = RichState()

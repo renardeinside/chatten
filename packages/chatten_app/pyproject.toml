@@ -1,20 +1,19 @@
 [project]
-name = "chatten-ui"
+name = "chatten-app"
 dynamic = ["version"]
-description = "Custom chat component for Dash"
+description = "Application-related code for RAG with sources on Databricks platform"
 readme = "README.md"
-authors = [
-    { name = "renardeinside", email = "polarpersonal@gmail.com" }
-]
 requires-python = ">=3.10"
 dependencies = [
-    "dash[dev]>=2.18.2",
-    "pyyaml>=6.0.2",
+    "chatten",
 ]
 
 [build-system]
 requires = ["hatchling", "hatch-vcs"]
 build-backend = "hatchling.build"
+
+[tool.uv.sources]
+chatten = { workspace = true }
 
 [tool.hatch.version]
 source = "vcs"
