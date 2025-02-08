@@ -3,14 +3,9 @@ name = "chatten-ui"
 dynamic = ["version"]
 description = "Custom chat component for Dash"
 readme = "README.md"
-authors = [
-    { name = "renardeinside", email = "polarpersonal@gmail.com" }
-]
+authors = [{ name = "renardeinside", email = "polarpersonal@gmail.com" }]
 requires-python = ">=3.10"
-dependencies = [
-    "dash[dev]>=2.18.2",
-    "pyyaml>=6.0.2",
-]
+dependencies = ["dash[dev]>=2.18.2", "pyyaml>=6.0.2"]
 
 [build-system]
 requires = ["hatchling", "hatch-vcs"]
@@ -26,6 +21,7 @@ root = "../../"
 path = "hooks/build.py"
 
 [dependency-groups]
-dev = [
-    "hatchling>=1.27.0",
-]
+dev = ["hatchling>=1.27.0"]
+
+[tool.hatch.build.targets.wheel]
+artifacts = ["chatten_ui/**"]

@@ -3,7 +3,7 @@
 
 build-app:
 	rm -rf ./.build
-	uv build --package=chatten-app --wheel -o ./.build
+	uv build --all-packages --wheel -o ./.build
 	cd .build && ls *.whl > requirements.txt
 
 
