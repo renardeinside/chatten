@@ -7,6 +7,10 @@ requires-python = ">=3.10"
 dependencies = [
     "chatten",
     "databricks-sdk>=0.43.0",
+    "llama-index>=0.12.16",
+    "mlflow>=2.20.1",
+    "pypdf>=5.2.0",
+    "transformers>=4.48.3",
 ]
 
 [build-system]
