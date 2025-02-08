@@ -24,4 +24,5 @@ path = "hooks/build.py"
 dev = ["hatchling>=1.27.0"]
 
 [tool.hatch.build.targets.wheel]
+# we need to explicitly include this folder because it's .gitignore'd
 artifacts = ["chatten_ui/**"]

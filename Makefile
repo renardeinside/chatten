@@ -1,6 +1,3 @@
-	# uv build --all-packages --wheel -o ./.build
-	# ls ./.build/*.whl > ./.build/requirements.txt
-
 build-app:
 	rm -rf ./.build
 	uv build --all-packages --wheel -o ./.build
@@ -8,17 +5,17 @@ build-app:
 
 
 
-deploy: 
+deploy-app: 
 	databricks -p $(profile) \
 		bundle deploy \
 			--var="serving_endpoint=$(serving_endpoint)" \
 			--var="volume_path=$(volume_path)" \
 		
 
-run:
+run-app:
 	databricks -p $(profile) \
 		bundle run chatten \
 			--var="serving_endpoint=$(serving_endpoint)" \
 			--var="volume_path=$(volume_path)"
 
-all: build-app deploy run
+all-app: build-app deploy-app run-app
