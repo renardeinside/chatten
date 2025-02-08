@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-from packages.chatten_app.chatten_app.state import AppState
+from chatten_app.chatten_app.state import AppState
 
 
 class StatefulApp(FastAPI):

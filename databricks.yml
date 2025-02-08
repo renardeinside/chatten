@@ -27,12 +27,12 @@ resources:
       description: "RAG chatbot with sources retriveal and highlighing"
       source_code_path: ./.build
       config:
-        command: ["uvicorn", "chatten.app:app"]
+        command: ["uvicorn", "chatten_app.app:app"]
 
         env:
-          - name: "SERVING_ENDPOINT"
+          - name: "CHATTEN_SERVING_ENDPOINT"
             valueFrom: "serving_endpoint"
-          - name: "VOLUME_PATH"
+          - name: "CHATTEN_VOLUME_PATH"
             value: ${var.volume_path}
 
       resources:
