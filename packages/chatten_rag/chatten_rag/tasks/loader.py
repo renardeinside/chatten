@@ -1,7 +1,6 @@
 import collections
 from functools import partial
 from pathlib import PosixPath
-from typing import Iterator
 import requests
 from chatten.config import Config
 from chatten_rag.common import Task

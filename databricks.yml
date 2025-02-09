@@ -59,7 +59,7 @@ resources:
 
         - task_key: indexer
           depends_on:
-            - loader
+            - task_key: loader
           environment_key: Default
           max_retries: 0
           disable_auto_optimization: true
