@@ -47,7 +47,7 @@ class Indexer(Task[IndexerConfig]):
                 source_table_name=self.config.docs_full_name,
                 index_name=self.config.vsi_full_name,
                 pipeline_type="TRIGGERED",
-                primary_key="uuid",
+                primary_key="chunk_uuid",
                 embedding_source_column="chunk_text",
                 embedding_model_endpoint_name=self.config.embeddings_endpoint,
                 sync_computed_embeddings=True,

@@ -3,7 +3,7 @@ from typing import Iterator
 from databricks_langchain import ChatDatabricks
 from mlflow.langchain.output_parsers import ChatCompletionOutputParser
 from langgraph.prebuilt import create_react_agent
-from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
+from langchain_core.messages import AIMessage, ToolMessage
 from langchain_core.runnables import RunnableGenerator
 from loguru import logger
 from langgraph.pregel.io import AddableValuesDict
@@ -46,6 +46,7 @@ raw_agent = create_react_agent(
 
 class SourceInfo(BaseModel):
     path: str
+    content: str
 
 
 class StructuredOutput(BaseModel):
@@ -56,29 +57,23 @@ class StructuredOutput(BaseModel):
 def wrap_output(stream: Iterator[AddableValuesDict]) -> Iterator[str]:
 
     for event in stream:
-        messages: list[AIMessage | HumanMessage | ToolMessage] = event["messages"]
-        _payload = {}
+        messages = event["messages"]
+        last_tool_message = next(
+            msg for msg in reversed(messages) if isinstance(msg, ToolMessage)
+        )
+        last_ai_message = next(
+            msg for msg in reversed(messages) if isinstance(msg, AIMessage)
+        )
 
-        last_tool_message = [
-            message for message in messages if isinstance(message, ToolMessage)
-        ][-1]
-        last_ai_message = [
-            message for message in messages if isinstance(message, AIMessage)
-        ][-1]
-
-        _payload["content"] = last_ai_message.content
-
-        _docs = [Document(**doc) for doc in json.loads(last_tool_message.content)]
-        _payload["sources"] = [
-            SourceInfo(path=doc.metadata.get("path")) for doc in _docs
+        docs = [Document(**doc) for doc in json.loads(last_tool_message.content)]
+        sources = [
+            SourceInfo(content=doc.page_content, path=doc.metadata.get("path"))
+            for doc in docs
         ]
 
-        _output = StructuredOutput(**_payload)
-        yield _output.model_dump_json(indent=2)
+        yield StructuredOutput(
+            content=last_ai_message.content, sources=sources
+        ).model_dump_json(indent=2)
 
 
 agent = raw_agent | RunnableGenerator(wrap_output) | ChatCompletionOutputParser()
-
-_response = agent.invoke(
-    {"messages": [{"role": "user", "content": "what is unity catalog?"}]}
-)

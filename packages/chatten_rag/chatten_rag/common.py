@@ -15,7 +15,7 @@ class Task(ABC, Generic[T]):
         self.spark: SparkSession = SparkSession.builder.getOrCreate()
         self.logger = logger
         self.config: T = self.config_class()
-        self.client = WorkspaceClient()
+        self.client = WorkspaceClient(profile=self.config.profile)
 
     @abstractmethod
     def run(self):

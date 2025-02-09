@@ -101,8 +101,8 @@ class Loader(Task[Config]):
             df.withColumn("text", extract_text_from_pdf(col("content")))
             .where("text NOT LIKE '_____PDF_PARSE_ERROR%'")
             .withColumn("chunks", split_text(col("text")))
-            .withColumn("uuid", expr("uuid()")) # add a unique id for each chunk
             .select("path", explode(col("chunks")).alias("chunk_text"))
+            .withColumn("chunk_uuid", expr("uuid()"))  # add a unique id for each chunk
             .writeStream.trigger(availableNow=True)
             .option(
                 "checkpointLocation",
