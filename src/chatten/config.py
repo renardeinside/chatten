@@ -9,6 +9,14 @@ if env_file.exists():
 
 
 class Config(BaseSettings):
+    profile: str | None  # Databricks CLI profile
+
+    model_config = SettingsConfigDict(
+        env_nested_delimiter="__",  # for nested configuration
+        env_prefix="CHATTEN_",  # for app-based configuration
+        cli_parse_args=True,  # for command-line based configuration
+    )
+
     catalog: str
     db: str = "chatten"
     volume: str = "main"
@@ -23,11 +31,14 @@ class Config(BaseSettings):
     # table names
     docs_table: str = "docs"
 
-    model_config = SettingsConfigDict(
-        env_nested_delimiter="__",  # for nested configuration
-        env_prefix="CHATTEN_",  # for app-based configuration
-        cli_parse_args=True,  # for command-line based configuration
-    )
+    # vector search index name
+    vsi: str = "vsi"
+
+    # agent serving endpoint
+    agent_serving_endpoint: str = "chatten_agent"
+
+    # chat endpoint
+    chat_endpoint: str = "databricks-meta-llama-3-3-70b-instruct"
 
     @property
     def volume_path(self) -> PosixPath:
@@ -43,3 +54,11 @@ class Config(BaseSettings):
         return (
             "dbfs:" + (self.volume_path / self.raw_docs_checkpoint_location).as_posix()
         )
+
+    @property
+    def vsi_full_name(self):
+        return f"{self.catalog}.{self.db}.{self.vsi}"
+
+    @property
+    def docs_full_name(self):
+        return f"{self.catalog}.{self.db}.{self.docs_table}"

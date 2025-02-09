@@ -47,19 +47,19 @@ resources:
       name: chatten_rag
 
       tasks:
-        # - task_key: loader
-        #   environment_key: Default
-        #   max_retries: 0
-        #   disable_auto_optimization: true
-        #   python_wheel_task:
-        #     package_name: chatten_rag
-        #     entry_point: loader
-        #     parameters:
-        #       - "--catalog=${var.catalog}"
+        - task_key: loader
+          environment_key: Default
+          max_retries: 0
+          disable_auto_optimization: true
+          python_wheel_task:
+            package_name: chatten_rag
+            entry_point: loader
+            parameters:
+              - "--catalog=${var.catalog}"
 
         - task_key: indexer
-          # depends_on:
-          #   - task_key: loader
+          depends_on:
+            - task_key: loader
           environment_key: Default
           max_retries: 0
           disable_auto_optimization: true

@@ -7,8 +7,9 @@ from chatten_rag.common import Task
 from concurrent.futures import ThreadPoolExecutor
 import io
 from pypdf import PdfReader
-from pyspark.sql.functions import pandas_udf
+from pyspark.sql.functions import pandas_udf, col, explode
 import pandas as pd
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 
 @pandas_udf("string")
@@ -30,6 +31,12 @@ def extract_text_from_pdf(binary_content: pd.Series) -> pd.Series:
             return f"_____PDF_PARSE_ERROR_____: {str(e)}"
 
     return binary_content.apply(extract_text)
+
+
+@pandas_udf("array<string>")
+def split_text(text: pd.Series) -> pd.Series:
+    text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=100)
+    return text.apply(text_splitter.split_text)
 
 
 class Loader(Task[Config]):
@@ -80,7 +87,7 @@ class Loader(Task[Config]):
         source_path = "dbfs:" + self.config.full_raw_docs_path.as_posix()
 
         self.logger.info(
-            f"Processing files into docs table {self.config.docs_table} from {source_path}"
+            f"Processing files into docs table {self.config.docs_full_name} from {source_path}"
         )
 
         df = (
@@ -91,27 +98,28 @@ class Loader(Task[Config]):
         )
 
         query = (
-            df.withColumn("text", extract_text_from_pdf(df.content))
+            df.withColumn("text", extract_text_from_pdf(col("content")))
             .where("text NOT LIKE '_____PDF_PARSE_ERROR%'")
-            .drop("content")
+            .withColumn("chunks", split_text(col("text")))
+            .select("path", explode(col("chunks")).alias("chunk_text"))
             .writeStream.trigger(availableNow=True)
             .option(
                 "checkpointLocation",
                 self.config.full_raw_docs_checkpoint_location,
             )
             .option("mergeSchema", "true")
-            .toTable(self.config.docs_table)
+            .toTable(self.config.docs_full_name)
         )
 
         query.awaitTermination()
 
         enable_cdf = f"""
-        ALTER TABLE {self.config.docs_table} 
+        ALTER TABLE {self.config.docs_full_name} 
             SET TBLPROPERTIES (delta.enableChangeDataFeed = true)
         """
         self.spark.sql(enable_cdf)
 
-        self.logger.info(f"Finished processing files into {self.config.docs_table}")
+        self.logger.info(f"Finished processing files into {self.config.docs_full_name}")
 
     def run(self):
         self.logger.info(
