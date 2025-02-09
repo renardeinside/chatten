@@ -7,7 +7,7 @@ from chatten_rag.common import Task
 from concurrent.futures import ThreadPoolExecutor
 import io
 from pypdf import PdfReader
-from pyspark.sql.functions import pandas_udf, col, explode
+from pyspark.sql.functions import pandas_udf, col, explode, expr
 import pandas as pd
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
@@ -101,6 +101,7 @@ class Loader(Task[Config]):
             df.withColumn("text", extract_text_from_pdf(col("content")))
             .where("text NOT LIKE '_____PDF_PARSE_ERROR%'")
             .withColumn("chunks", split_text(col("text")))
+            .withColumn("uuid", expr("uuid()")) # add a unique id for each chunk
             .select("path", explode(col("chunks")).alias("chunk_text"))
             .writeStream.trigger(availableNow=True)
             .option(
