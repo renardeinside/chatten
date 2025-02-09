@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
     "chatten",
+    "databricks-agents>=0.15.0",
     "databricks-langchain>=0.3.0",
     "databricks-sdk>=0.43.0",
     "databricks-vectorsearch>=0.47",
@@ -14,6 +15,7 @@ dependencies = [
     "mlflow-skinny[databricks,langchain]>=2.20.1",
     "pandas>=2.2.3",
     "pypdf>=5.2.0",
+    "tenacity>=9.0.0",
     "transformers>=4.48.3",
 ]
 

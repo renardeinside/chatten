@@ -1,6 +1,7 @@
 from chatten_rag.common import Task
 from chatten.config import Config
 from databricks.vector_search.client import VectorSearchClient
+from tenacity import retry, wait_exponential_jitter, stop_after_attempt
 
 
 class IndexerConfig(Config):
@@ -62,5 +63,14 @@ class Indexer(Task[IndexerConfig]):
         index.wait_until_ready()
 
         self.logger.info(f"Index {self.config.vsi_full_name} is ready, syncing it...")
-        index.sync()
+
+        @retry(
+            wait=wait_exponential_jitter(multiplier=1, min=1, max=10),
+            stop=stop_after_attempt(5),
+        )
+        def sync_with_retries():
+            index.sync()
+
+        sync_with_retries()
+
         self.logger.info(f"Index {self.config.vsi_full_name} sync complete.")

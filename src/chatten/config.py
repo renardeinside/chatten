@@ -21,6 +21,13 @@ class Config(BaseSettings):
     db: str = "chatten"
     volume: str = "main"
 
+    PROMPT: str = """
+    You are a helpful assistant on all topics related to Databricks. 
+    Always return the result in a Markdown format.
+    Almost always try to use the retriever tool to search through the document corpus, 
+        especially when the user asks a question.
+    """
+    
     # paths in the volume
     docs_path: PosixPath = PosixPath("raw_docs")
 
@@ -37,7 +44,7 @@ class Config(BaseSettings):
     # agent serving endpoint
     agent_serving_endpoint: str = "chatten_agent"
 
-    # chat endpoint
+    # chat endpoint, to be used in the agent
     chat_endpoint: str = "databricks-meta-llama-3-3-70b-instruct"
 
     @property

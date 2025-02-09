@@ -502,10 +502,10 @@ requires-dist = [
 
 [[package]]
 name = "chatten-rag"
-version = "0.1.dev40+g3c86213.d20250209"
 source = { editable = "packages/chatten_rag" }
 dependencies = [
     { name = "chatten" },
+    { name = "databricks-agents" },
     { name = "databricks-langchain" },
     { name = "databricks-sdk" },
     { name = "databricks-vectorsearch" },
@@ -514,6 +514,7 @@ dependencies = [
     { name = "mlflow-skinny", extra = ["databricks", "langchain"] },
     { name = "pandas" },
     { name = "pypdf" },
+    { name = "tenacity" },
     { name = "transformers" },
 ]
 
@@ -525,6 +526,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "chatten", editable = "." },
+    { name = "databricks-agents", specifier = ">=0.15.0" },
     { name = "databricks-langchain", specifier = ">=0.3.0" },
     { name = "databricks-sdk", specifier = ">=0.43.0" },
     { name = "databricks-vectorsearch", specifier = ">=0.47" },
@@ -533,6 +535,7 @@ requires-dist = [
     { name = "mlflow-skinny", extras = ["databricks", "langchain"], specifier = ">=2.20.1" },
     { name = "pandas", specifier = ">=2.2.3" },
     { name = "pypdf", specifier = ">=5.2.0" },
+    { name = "tenacity", specifier = ">=9.0.0" },
     { name = "transformers", specifier = ">=4.48.3" },
 ]
 
@@ -771,6 +774,23 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/3a/81/34983fa0c67125d7fff9d55e5d1a065127bde7ca49ca32d04dedd55f9f35/dash_table-5.0.0.tar.gz", hash = "sha256:18624d693d4c8ef2ddec99a6f167593437a7ea0bf153aa20f318c170c5bc7308", size = 3391 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/da/ce/43f77dc8e7bbad02a9f88d07bf794eaf68359df756a28bb9f2f78e255bb1/dash_table-5.0.0-py3-none-any.whl", hash = "sha256:19036fa352bb1c11baf38068ec62d172f0515f73ca3276c79dee49b95ddc16c9", size = 3912 },
+]
+
+[[package]]
+name = "databricks-agents"
+version = "0.15.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "databricks-sdk" },
+    { name = "dataclasses-json" },
+    { name = "jinja2" },
+    { name = "mlflow", extra = ["databricks"] },
+    { name = "tiktoken" },
+    { name = "tqdm" },
+    { name = "urllib3" },
+]
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/d9/43/50ac8799931853719525e47526643542bcab6052239236ab0b4d0d97913e/databricks_agents-0.15.0-py3-none-any.whl", hash = "sha256:8a50fcbd7af7a7f5358938e6ed33b037db904ae18e0a5676581480c0a502b259", size = 136160 },
 ]
 
 [[package]]
@@ -1926,6 +1946,14 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/ae/10/e00d47c7e49d8056031aff0a4f911c27c4fd7d194b02db326eadd2b05358/mlflow-2.20.1.tar.gz", hash = "sha256:354ebedc5785ae7296ac146667ffe541612a9a004cb4fc545ddda35c589c68fe", size = 27707562 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/e7/b7/f8d41dafefb11a58ee88082ebfe0bc8dab17f293609f8b546d86168ec934/mlflow-2.20.1-py3-none-any.whl", hash = "sha256:ee8781d8c3bda2265f433cf385b09b1af1ad4cb1186ffc755fe5af2e0feda7ce", size = 28310789 },
+]
+
+[package.optional-dependencies]
+databricks = [
+    { name = "azure-storage-file-datalake" },
+    { name = "boto3" },
+    { name = "botocore" },
+    { name = "google-cloud-storage" },
 ]
 
 [[package]]
