@@ -99,14 +99,19 @@ class Loader(Task[Config]):
                 "checkpointLocation",
                 self.config.full_raw_docs_checkpoint_location,
             )
+            .option("mergeSchema", "true")
             .toTable(self.config.docs_table)
         )
 
         query.awaitTermination()
 
-        self.logger.info(
-            f"Finished processing files into {self.config.docs_table}"
-        )
+        enable_cdf = f"""
+        ALTER TABLE {self.config.docs_table} 
+            SET TBLPROPERTIES (delta.enableChangeDataFeed = true)
+        """
+        self.spark.sql(enable_cdf)
+
+        self.logger.info(f"Finished processing files into {self.config.docs_table}")
 
     def run(self):
         self.logger.info(
