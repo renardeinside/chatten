@@ -9,7 +9,7 @@ if env_file.exists():
 
 
 class Config(BaseSettings):
-    profile: str | None  # Databricks CLI profile
+    profile: str | None = None  # Databricks CLI profile, useful for local testing
 
     model_config = SettingsConfigDict(
         env_nested_delimiter="__",  # for nested configuration
