@@ -65,7 +65,7 @@ class Indexer(Task[IndexerConfig]):
         self.logger.info(f"Index {self.config.vsi_full_name} is ready, syncing it...")
 
         @retry(
-            wait=wait_exponential_jitter(multiplier=1, min=1, max=10),
+            wait=wait_exponential_jitter(initial=0.5, max=60),
             stop=stop_after_attempt(5),
         )
         def sync_with_retries():

@@ -35,7 +35,7 @@ def get_agent(config: Config):
     raw_agent = create_react_agent(
         llm,
         tools=[retriever_tool],
-        prompt=PROMPT,
+        prompt=config.prompt,
     )
 
     def wrap_output(stream: Iterator[AddableValuesDict]) -> Iterator[str]:
