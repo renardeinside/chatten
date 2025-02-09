@@ -26,7 +26,7 @@ class Indexer(Task[IndexerConfig]):
 
     def run(self):
 
-        client = VectorSearchClient()
+        client = VectorSearchClient(disable_notice=True)
 
         self.logger.info(f"Checking the VSI endpoint {self.config.vsi_endpoint}")
         try:
@@ -48,7 +48,7 @@ class Indexer(Task[IndexerConfig]):
             self.logger.info(f"Index {self.config.vsi} found.")
         except Exception:
             self.logger.info(
-                f"Index {self.config.vsi} not found in {self.config.catalog}.{self.config.db}. Creating it."
+                f"Index {self.config.vsi} not found in {self.config.catalog}.{self.config.db} - creating it..."
             )
 
             index = client.create_delta_sync_index_and_wait(
@@ -62,6 +62,11 @@ class Indexer(Task[IndexerConfig]):
                 sync_computed_embeddings=True,
             )
 
-        self.logger.info(f"Index {self.config.vsi_full_name} is ready, syncing it.")
+        self.logger.info(
+            f"Waiting for index {self.config.vsi_full_name} to be ready..."
+        )
+        index.wait_until_ready()
+
+        self.logger.info(f"Index {self.config.vsi_full_name} is ready, syncing it...")
         index.sync()
         self.logger.info(f"Index {self.config.vsi_full_name} sync complete.")
