@@ -81,7 +81,7 @@ class Loader(Task[Config]):
         source_path = "dbfs:" + self.config.full_raw_docs_path.as_posix()
 
         self.logger.info(
-            f"Processing files into raw docs registry {self.config.raw_docs_registry} from {source_path}"
+            f"Processing files into docs table {self.config.docs_table} from {source_path}"
         )
 
         df = (
@@ -100,13 +100,13 @@ class Loader(Task[Config]):
                 "checkpointLocation",
                 self.config.full_raw_docs_checkpoint_location,
             )
-            .toTable(self.config.raw_docs_registry)
+            .toTable(self.config.docs_table)
         )
 
         query.awaitTermination()
 
         self.logger.info(
-            f"Finished processing files into {self.config.raw_docs_registry}"
+            f"Finished processing files into {self.config.docs_table}"
         )
 
     def run(self):

@@ -21,10 +21,7 @@ class Config(BaseSettings):
     processed_docs_checkpoint_location: PosixPath = PosixPath("checkpoints/processed")
 
     # table names
-    raw_docs_registry: str = "raw_docs_registry"
-
-    # endpoints
-    chunking_endpoint: str = "databricks-meta-llama-3-1-70b-instruct"
+    docs_table: str = "docs"
 
     model_config = SettingsConfigDict(
         env_nested_delimiter="__",  # for nested configuration
