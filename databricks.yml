@@ -48,6 +48,7 @@ resources:
 
       tasks:
         - task_key: loader
+          environment_key: Default
           max_retries: 0
           disable_auto_optimization: true
           python_wheel_task:
@@ -55,7 +56,11 @@ resources:
             entry_point: loader
             parameters:
               - "--catalog=${var.catalog}"
+
         - task_key: indexer
+          depends_on:
+            - loader
+          environment_key: Default
           max_retries: 0
           disable_auto_optimization: true
           python_wheel_task:
@@ -64,8 +69,6 @@ resources:
             parameters:
               - "--catalog=${var.catalog}"
               - "--vsi_endpoint=${var.vsi_endpoint}"
-
-          environment_key: Default
 
       environments:
         - environment_key: Default
