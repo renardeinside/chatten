@@ -19,7 +19,7 @@ variables:
   vsi_endpoint:
     type: string
     description: The vector search index endpoint
-    default: "one-env-shared-endpoint-3"
+    default: "dbdemos_vs_endpoint"
 
 resources:
   # apps:
@@ -47,28 +47,28 @@ resources:
       name: chatten_rag
 
       tasks:
-        - task_key: loader
-          environment_key: Default
-          max_retries: 0
-          disable_auto_optimization: true
-          python_wheel_task:
-            package_name: chatten_rag
-            entry_point: loader
-            parameters:
-              - "--catalog=${var.catalog}"
-
-        # - task_key: indexer
-        #   # depends_on:
-        #   #   - task_key: loader
+        # - task_key: loader
         #   environment_key: Default
         #   max_retries: 0
         #   disable_auto_optimization: true
         #   python_wheel_task:
         #     package_name: chatten_rag
-        #     entry_point: indexer
+        #     entry_point: loader
         #     parameters:
         #       - "--catalog=${var.catalog}"
-        #       - "--vsi_endpoint=${var.vsi_endpoint}"
+
+        - task_key: indexer
+          # depends_on:
+          #   - task_key: loader
+          environment_key: Default
+          max_retries: 0
+          disable_auto_optimization: true
+          python_wheel_task:
+            package_name: chatten_rag
+            entry_point: indexer
+            parameters:
+              - "--catalog=${var.catalog}"
+              - "--vsi_endpoint=${var.vsi_endpoint}"
 
       environments:
         - environment_key: Default
