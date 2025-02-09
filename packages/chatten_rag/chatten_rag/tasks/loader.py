@@ -20,9 +20,15 @@ def extract_text_from_pdf(binary_content: pd.Series) -> pd.Series:
             text = []
             for page in reader.pages:
                 text.append(page.extract_text())
-            return "\n".join(text)
+
+            final_text = "\n".join(text)
+
+            if not final_text.replace("\n", "").strip():
+                raise ValueError("Extracted text is empty or contains only whitespace.")
+
+            return final_text
         except Exception as e:
-            return f"_____PDF_PARSE_ERROR: {e}_____"
+            return f"_____PDF_PARSE_ERROR_____: {str(e)}"
 
     return binary_content.apply(extract_text)
 
@@ -87,6 +93,8 @@ class Loader(Task[Config]):
 
         query = (
             df.withColumn("text", extract_text_from_pdf(df.content))
+            .where("text NOT LIKE '_____PDF_PARSE_ERROR%'")
+            .drop("content")
             .writeStream.trigger(availableNow=True)
             .option(
                 "checkpointLocation",
