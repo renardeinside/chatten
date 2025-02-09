@@ -43,7 +43,7 @@ class Indexer(Task[IndexerConfig]):
             index = client.create_delta_sync_index_and_wait(
                 endpoint_name=self.config.vsi_endpoint,
                 source_table_name=f"{self.config.catalog}.{self.config.db}.{self.config.docs_table}",
-                index_name=f"{self.config.catalog}{self.config.db}.{self.config.vsi}",
+                index_name=f"{self.config.catalog}.{self.config.db}.{self.config.vsi}",
                 pipeline_type="TRIGGERED",
                 primary_key="path",
                 embedding_source_column="text",
