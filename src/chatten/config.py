@@ -30,8 +30,6 @@ class Config(BaseSettings):
         especially when the user asks a question.
     """
 
-    experiment_name: str = "chatten"
-
     # paths in the volume
     docs_path: PosixPath = PosixPath("raw_docs")
 

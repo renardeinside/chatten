@@ -9,6 +9,7 @@ from mlflow.models.model import ModelInfo
 
 from chatten.config import Config
 from databricks import agents
+from databricks.sdk import WorkspaceClient
 
 
 class Driver(Task[Config]):
@@ -19,9 +20,13 @@ class Driver(Task[Config]):
     }
 
     def run(self):
+        username = WorkspaceClient().current_user.me().user_name
+        experiment_path = f"/Users/{username}/chatten"
+        experiment = mlflow.set_experiment(experiment_path)
+
         agent = get_agent(self.config)
 
-        with mlflow.start_run():
+        with mlflow.start_run(experiment_id=experiment.experiment_id):
             logged_agent_info: ModelInfo = mlflow.langchain.log_model(
                 lc_model=agent,
                 pip_requirements=[
