@@ -10,12 +10,16 @@ artifacts:
     type: whl
     path: .
     build: rm -rf dist && uv build --wheel --package chatten && uv build --wheel --package chatten_rag
-   
+
 variables:
   catalog:
     type: string
     description: The catalog to use
-  
+
+  vsi_endpoint:
+    type: string
+    description: The vector search index endpoint
+    default: "dbdemos_vs_endpoint"
 
 resources:
   # apps:
@@ -51,6 +55,15 @@ resources:
             entry_point: loader
             parameters:
               - "--catalog=${var.catalog}"
+        - task_key: indexer
+          max_retries: 0
+          disable_auto_optimization: true
+          python_wheel_task:
+            package_name: chatten_rag
+            entry_point: indexer
+            parameters:
+              - "--catalog=${var.catalog}"
+              - "--vsi_endpoint=${var.vsi_endpoint}"
 
           environment_key: Default
 

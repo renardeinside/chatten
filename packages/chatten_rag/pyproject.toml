@@ -36,3 +36,4 @@ dev = [
 
 [project.scripts]
 loader = "chatten_rag.tasks.loader:Loader.entrypoint"
+indexer = "chatten_rag.tasks.indexer:Indexer.entrypoint"
