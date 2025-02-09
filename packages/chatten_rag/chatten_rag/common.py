@@ -4,7 +4,6 @@ from pyspark.sql import SparkSession
 from loguru import logger
 from chatten.config import Config
 from databricks.sdk import WorkspaceClient
-from databricks.sdk.errors import NotFound
 
 T = TypeVar("T", bound=Config)
 
