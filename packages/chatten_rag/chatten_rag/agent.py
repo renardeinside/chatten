@@ -5,7 +5,6 @@ from mlflow.langchain.output_parsers import ChatCompletionOutputParser
 from langgraph.prebuilt import create_react_agent
 from langchain_core.messages import AIMessage, ToolMessage
 from langchain_core.runnables import RunnableGenerator
-from loguru import logger
 from langgraph.pregel.io import AddableValuesDict
 from langchain_core.documents import Document
 
@@ -35,7 +34,7 @@ def get_agent(config: Config):
     raw_agent = create_react_agent(
         llm,
         tools=[retriever_tool],
-        prompt=config.prompt,
+        prompt=config.PROMPT,
     )
 
     def wrap_output(stream: Iterator[AddableValuesDict]) -> Iterator[str]:

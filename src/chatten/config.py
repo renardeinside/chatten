@@ -5,7 +5,9 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 env_file = Path(__file__).parent.parent.parent / ".env"
 
 if env_file.exists():
-    logger.info(f"Using environment file: {env_file}")
+    logger.info(
+        f"Using environment file: {env_file}"
+    )  # pydantic-settings will automatically load the environment variables from the .env file
 
 
 class Config(BaseSettings):
@@ -27,7 +29,7 @@ class Config(BaseSettings):
     Almost always try to use the retriever tool to search through the document corpus, 
         especially when the user asks a question.
     """
-    
+
     # paths in the volume
     docs_path: PosixPath = PosixPath("raw_docs")
 
@@ -69,3 +71,7 @@ class Config(BaseSettings):
     @property
     def docs_full_name(self):
         return f"{self.catalog}.{self.db}.{self.docs_table}"
+
+    @property
+    def agent_serving_endpoint_full(self):
+        return f"{self.catalog}.{self.db}.{self.agent_serving_endpoint}"

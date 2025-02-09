@@ -40,3 +40,4 @@ dev = [
 [project.scripts]
 loader = "chatten_rag.tasks.loader:Loader.entrypoint"
 indexer = "chatten_rag.tasks.indexer:Indexer.entrypoint"
+driver = "chatten_rag.tasks.driver:Driver.entrypoint"
