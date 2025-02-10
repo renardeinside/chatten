@@ -77,7 +77,7 @@ class Config(BaseSettings):
         return f"{self.catalog}.{self.db}.{self.agent_serving_endpoint}"
 
     @property
-    def to_model_config(self):
+    def as_model_config(self):
         return {
             "chat_endpoint": self.chat_endpoint,
             "vsi": self.vsi_full_name,

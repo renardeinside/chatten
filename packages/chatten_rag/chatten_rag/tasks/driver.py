@@ -66,7 +66,7 @@ class Driver(Task[Config]):
             dest_agent_path.write_text(src_agent_path.read_text())
             config_path.write_text(
                 yaml.dump(
-                    self.config.to_model_config(),
+                    self.config.as_model_config,
                     indent=4,
                 )
             )
