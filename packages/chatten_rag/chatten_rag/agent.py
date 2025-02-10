@@ -46,13 +46,13 @@ def get_agent(chat_model: str, vsi: str, prompt: str):
     return _agent
 
 
-if __name__ == "__main__":
-    config = ModelConfig(development_config="config.yml")
 
-    agent = get_agent(
-        config.get("chat_endpoint"),
-        config.get("vsi"),
-        config.get("PROMPT"),
-    )
+config = ModelConfig(development_config="config.yml")
 
-    mlflow.models.set_model(agent)
+agent = get_agent(
+    config.get("chat_endpoint"),
+    config.get("vsi"),
+    config.get("PROMPT"),
+)
+
+mlflow.models.set_model(agent)
