@@ -29,7 +29,11 @@ class Driver(Task[Config]):
         self.logger.info(f"Mlflow experiment set up: {experiment}")
 
         self.logger.info("Getting the agent")
-        agent = get_agent(self.config)
+        agent = get_agent(
+            chat_model=self.config.chat_endpoint,
+            vsi=self.config.vsi_full_name,
+            prompt=self.config.PROMPT,
+        )
         self.logger.info(f"Agent loaded: {agent}")
 
         with mlflow.start_run(experiment_id=experiment.experiment_id) as run:
@@ -44,8 +48,6 @@ class Driver(Task[Config]):
                     "langgraph",
                     "langchain-core",
                     "pydantic",
-                    "pydantic-settings",
-                    "loguru",
                 ],
                 artifact_path="agent",
                 input_example=self.INPUT_EXAMPLE,

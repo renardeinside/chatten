@@ -1,16 +1,14 @@
 import json
 from typing import Iterator
 from databricks_langchain import ChatDatabricks
-from mlflow.langchain.output_parsers import ChatCompletionsOutputParser
+from mlflow.langchain.output_parsers import ChatCompletionOutputParser
 from langgraph.prebuilt import create_react_agent
-from langchain_core.messages import AIMessage, ToolMessage
 from langchain_core.runnables import RunnableGenerator
 from langgraph.pregel.io import AddableValuesDict
 from langchain_core.documents import Document
+from langchain_core.messages import BaseMessage
 
 from databricks_langchain import VectorSearchRetrieverTool
-from chatten.config import Config
-from chatten.models import StructuredOutput, SourceInfo
 
 
 class SerializedVectorSearchRetrieverTool(VectorSearchRetrieverTool):
@@ -21,42 +19,28 @@ class SerializedVectorSearchRetrieverTool(VectorSearchRetrieverTool):
         return json.dumps(_serialized)
 
 
-def get_agent(config: Config):
+def get_agent(chat_model: str, vsi: str, prompt: str) -> RunnableGenerator:
     retriever_tool = SerializedVectorSearchRetrieverTool(
-        index_name=config.vsi_full_name,
+        index_name=vsi,
         num_results=3,
         tool_name="retriever",
         tool_description="Search through document corpus stored in Vector Search Index. Provides helpful insights about Databricks.",
     )
 
-    llm = ChatDatabricks(model=config.chat_endpoint)
+    llm = ChatDatabricks(model=chat_model)
 
     raw_agent = create_react_agent(
         llm,
         tools=[retriever_tool],
-        prompt=config.PROMPT,
+        prompt=prompt,
     )
 
     def wrap_output(stream: Iterator[AddableValuesDict]) -> Iterator[str]:
 
         for event in stream:
-            messages = event["messages"]
-            last_tool_message = next(
-                msg for msg in reversed(messages) if isinstance(msg, ToolMessage)
-            )
-            last_ai_message = next(
-                msg for msg in reversed(messages) if isinstance(msg, AIMessage)
-            )
+            messages: list[BaseMessage] = event["messages"]
+            packed_messages = [message.model_dump() for message in messages]
+            yield json.dumps(packed_messages)
 
-            docs = [Document(**doc) for doc in json.loads(last_tool_message.content)]
-            sources = [
-                SourceInfo(content=doc.page_content, path=doc.metadata.get("path"))
-                for doc in docs
-            ]
-
-            yield StructuredOutput(
-                content=last_ai_message.content, sources=sources
-            ).model_dump_json(indent=2)
-
-    agent = raw_agent | RunnableGenerator(wrap_output) | ChatCompletionsOutputParser()
+    agent = raw_agent | RunnableGenerator(wrap_output) | ChatCompletionOutputParser()
     return agent
