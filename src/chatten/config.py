@@ -83,3 +83,8 @@ class Config(BaseSettings):
             "vsi": self.vsi_full_name,
             "PROMPT": self.PROMPT,
         }
+
+    @property
+    def agent_serving_endpoint_name(self):
+        # when databricks.agents.deploy is called, it will deploy the model to this endpoint
+        return f"agents_{self.catalog}-{self.db}-{self.agent_serving_endpoint}"

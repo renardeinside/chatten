@@ -11,6 +11,7 @@ from langchain_core.messages import BaseMessage
 from databricks_langchain import VectorSearchRetrieverTool
 from mlflow.models import ModelConfig
 import mlflow
+from loguru import logger
 
 
 class SerializedVectorSearchRetrieverTool(VectorSearchRetrieverTool):
@@ -41,9 +42,15 @@ def get_agent(chat_model: str, vsi: str, prompt: str):
     def wrap_output(stream: Iterator[AddableValuesDict]) -> Iterator[str]:
 
         for event in stream:
-            messages: list[BaseMessage] = event["messages"]
-            packed_messages = [message.model_dump() for message in messages]
-            yield json.dumps(packed_messages)
+            try:
+                messages: list[BaseMessage] = event["messages"]
+                packed_messages = [message.model_dump() for message in messages]
+                yield json.dumps(packed_messages)
+            except Exception as e:
+                logger.error(f"Error in wrap_output: {e}")
+                logger.error(f"Event with type {type(event)}")
+                logger.error(f"Event: {event}")
+                yield json.dumps([])
 
     _agent = raw_agent | RunnableGenerator(wrap_output) | ChatCompletionOutputParser()
     return _agent

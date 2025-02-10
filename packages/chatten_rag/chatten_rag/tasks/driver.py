@@ -25,6 +25,7 @@ def log_agent(
             "langgraph",
             "langchain-core",
             "pydantic",
+            "loguru",
         ],
         artifact_path="agent",
         input_example=input_example,
@@ -54,6 +55,9 @@ class Driver(Task[Config]):
 
         self.logger.info(f"Mlflow experiment set up: {experiment}")
 
+        # we're using a temporary directory to store the agent and config files
+        # to comply with model-from-code approach
+        # read more: https://mlflow.org/blog/models_from_code
         with tempfile.TemporaryDirectory() as _temp_dir:
             _temp_dir_path = PosixPath(_temp_dir)
             config_path = _temp_dir_path / "config.yml"
@@ -77,10 +81,10 @@ class Driver(Task[Config]):
                 )
 
                 logged_agent_info = log_agent(
-                    dest_agent_path.as_posix(),
-                    config_path.as_posix(),
-                    self.INPUT_EXAMPLE,
-                    self.config.vsi_full_name,
+                    agent_path=dest_agent_path.as_posix(),
+                    model_config_path=config_path.as_posix(),
+                    input_example=self.INPUT_EXAMPLE,
+                    vsi=self.config.vsi_full_name,
                 )
 
         self.logger.info(f"Model logged to MLflow: {logged_agent_info}")
