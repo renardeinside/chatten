@@ -47,7 +47,6 @@ class Driver(Task[Config]):
                     "pydantic-settings",
                     "loguru",
                 ],
-                model_config="config.yml",
                 artifact_path="agent",
                 input_example=self.INPUT_EXAMPLE,
                 resources=[
