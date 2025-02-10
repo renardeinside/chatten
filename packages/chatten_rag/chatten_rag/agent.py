@@ -1,7 +1,7 @@
 import json
 from typing import Iterator
 from databricks_langchain import ChatDatabricks
-from mlflow.langchain.output_parsers import ChatCompletionOutputParser
+from mlflow.langchain.output_parsers import ChatCompletionsOutputParser
 from langgraph.prebuilt import create_react_agent
 from langchain_core.messages import AIMessage, ToolMessage
 from langchain_core.runnables import RunnableGenerator
@@ -58,5 +58,5 @@ def get_agent(config: Config):
                 content=last_ai_message.content, sources=sources
             ).model_dump_json(indent=2)
 
-    agent = raw_agent | RunnableGenerator(wrap_output) | ChatCompletionOutputParser()
+    agent = raw_agent | RunnableGenerator(wrap_output) | ChatCompletionsOutputParser()
     return agent
