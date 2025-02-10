@@ -126,7 +126,7 @@ class AppState(State):
         self.config = Config()
         logger.info(f"Config: {self.config.model_dump_json(indent=4)}")
         self.client = WorkspaceClient(profile=self.config.profile)
-        self.file_cache = FileCache(self.client, self.config.volume_path.as_posix())
+        self.file_cache = FileCache(self.client, self.config.full_raw_docs_path)
 
 
 

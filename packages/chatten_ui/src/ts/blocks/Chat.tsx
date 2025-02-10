@@ -173,7 +173,7 @@ const ChatUI = () => {
                 >
                   <div className="flex justify-between items-center">
                     <div className="text-sm font-semibold text-gray-700">{meta.file_name}</div>
-                    <div className="text-xs text-gray-900">{meta.year}</div>
+                    {meta.year && <div className="text-xs text-gray-900">{meta.year}</div>}
                   </div>
                   {meta.content && (
                     <div className="text-xs text-gray-500 mt-1 truncate max-w-72">{meta.content}</div>

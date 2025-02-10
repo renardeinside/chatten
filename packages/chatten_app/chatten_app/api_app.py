@@ -1,13 +1,19 @@
 import mimetypes
 from pathlib import PosixPath
-from chatten_app.models import ApiChatMetadata, ApiChatResponse, ChatRequest, RelevantPageReq
+from chatten_app.models import (
+    ApiChatMetadata,
+    ApiChatResponse,
+    ChatRequest,
+    ChatResponse,
+    RelevantPageReq,
+)
 from databricks.sdk.service.serving import ChatMessage, ChatMessageRole
-from typing import Any
 from fastapi import BackgroundTasks, FastAPI
 
 from chatten_app.state import AppState
 from fastapi.responses import JSONResponse, StreamingResponse
 from loguru import logger
+
 
 class StatefulApp(FastAPI):
     """FastAPI app with a state object that contains the client and file cache.
@@ -18,7 +24,7 @@ class StatefulApp(FastAPI):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.state: AppState  = AppState()
+        self.state: AppState = AppState()
 
 
 api_app = StatefulApp()
@@ -28,7 +34,7 @@ api_app = StatefulApp()
 async def chat_with_llm(request: ChatRequest, background_tasks: BackgroundTasks):
 
     logger.info(
-        f"Received message: {request.message}, using endpoint: {api_app.state.config.serving_endpoint}"
+        f"Received message: {request.message}, using endpoint: {api_app.state.config.agent_serving_endpoint_name}"
     )
 
     result = api_app.state.client.serving_endpoints.query(
@@ -42,47 +48,23 @@ async def chat_with_llm(request: ChatRequest, background_tasks: BackgroundTasks)
         ],
     )
     try:
-        # we expect the incoming response to be a single message with all content packed in it
-        # The JSON will look like this:
-        # [
-        #   {"type": "ai_response", "content": "response content"},
-        #   {"type": "tool_response", "responses": [
-        #       {"metadata": {"file_name": "file.pdf", "year": 2021, "chunk_num": 0, "char_length": 1000}, "content": "retrieved text from file"},
-        #   ]}
-        # ]
-        # the try-catch is implemented because sometimes chat can return an empty response without any content
-        raw_content =  result.choices[0].message.content
+        # all content is in the first choice, packed in a JSON serialized string
+        raw_content = result.choices[0].message.content
+        response = ChatResponse.from_content(raw_content)
 
-        content = [
-            message.get("content")
-            for message in messages
-            if message.get("type") == "ai_response" and message.get("content")
-        ][0]
+        for source in response.sources:
+            background_tasks.add_task(
+                api_app.state.file_cache.download_file, source.path
+            )
 
-        raw_metadata_responses = sum(
-            [
-                msg.get("responses")
-                for msg in messages
-                if msg.get("type") == "tool_response" and msg.get("responses")
+        return ApiChatResponse(
+            content=response.content,
+            metadata=[
+                ApiChatMetadata(content=source.query, file_name=source.path)
+                for source in response.sources
             ],
-            [],
         )
 
-        metadata: list[ApiChatMetadata] = [
-            ApiChatMetadata.model_validate(
-                {**response.get("metadata"), "content": response.get("content")}
-            )
-            for response in raw_metadata_responses
-            if response.get("metadata")
-        ]
-        for meta in metadata:
-            if meta.file_name:
-                # put files in background download and store in cache
-                background_tasks.add_task(
-                    api_app.state.file_cache.download_file, meta.file_name
-                )
-
-        return ApiChatResponse(content=content, metadata=metadata)
     except Exception as e:
         logger.error(f"Error parsing response: {e}")
         logger.error(f"Raw response: {result}")
@@ -99,7 +81,9 @@ def get_files(file_name: PosixPath):
     return StreamingResponse(
         api_app.state.file_cache.get_as_iterable(file_name),
         media_type=mime_type,
-        headers={"Content-Disposition": f'attachment; filename="{file_name.as_posix()}"'},
+        headers={
+            "Content-Disposition": f'attachment; filename="{file_name.as_posix()}"'
+        },
     )
 
 

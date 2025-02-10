@@ -1,7 +1,9 @@
 import axios from "axios";
 import { Message } from "./types";
 
-const apiClient = axios.create({});
+const apiClient = axios.create({
+    baseURL: "/api",
+});
 
 export const api = {
     chat: {

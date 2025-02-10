@@ -17,6 +17,7 @@ class Config(BaseSettings):
         env_nested_delimiter="__",  # for nested configuration
         env_prefix="CHATTEN_",  # for app-based configuration
         cli_parse_args=True,  # for command-line based configuration
+        cli_ignore_unknown_args=True,  # ignore unknown command-line arguments
     )
 
     catalog: str

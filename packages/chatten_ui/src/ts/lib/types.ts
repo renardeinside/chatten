@@ -1,8 +1,6 @@
 export interface Metadata {
   file_name: string;
-  year: number | null;
-  chunk_num: number;
-  char_length: number;
+  year?: number;
   content?: string;
 }
 

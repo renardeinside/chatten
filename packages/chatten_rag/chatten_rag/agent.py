@@ -11,7 +11,6 @@ from langchain_core.messages import BaseMessage
 from databricks_langchain import VectorSearchRetrieverTool
 from mlflow.models import ModelConfig
 import mlflow
-from loguru import logger
 
 
 class SerializedVectorSearchRetrieverTool(VectorSearchRetrieverTool):
