@@ -59,21 +59,17 @@ class Driver(Task[Config]):
             config_path = _temp_dir_path / "config.yml"
             dest_agent_path = _temp_dir_path / "agent.py"
 
-            _config = yaml.dump(
-                {
-                    "chat_endpoint": self.config.chat_endpoint,
-                    "vsi": self.config.vsi_full_name,
-                    "PROMPT": self.config.PROMPT,
-                },
-                indent=4,
-            )
-
             self.logger.info(
                 f"Saving the agent and config to a temporary directory: {_temp_dir}"
             )
 
             dest_agent_path.write_text(src_agent_path.read_text())
-            config_path.write_text(_config)
+            config_path.write_text(
+                yaml.dump(
+                    self.config.to_model_config(),
+                    indent=4,
+                )
+            )
 
             with mlflow.start_run(experiment_id=experiment.experiment_id) as run:
                 self.logger.info(
