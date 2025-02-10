@@ -42,15 +42,15 @@ def get_agent(chat_model: str, vsi: str, prompt: str):
     def wrap_output(stream: Iterator[AddableValuesDict]) -> Iterator[str]:
 
         for event in stream:
-            try:
+
+            if "agent" in event:
+                messages: list[BaseMessage] = event["agent"]["messages"]
+
+            elif "messages" in event:
                 messages: list[BaseMessage] = event["messages"]
-                packed_messages = [message.model_dump() for message in messages]
-                yield json.dumps(packed_messages)
-            except Exception as e:
-                logger.error(f"Error in wrap_output: {e}")
-                logger.error(f"Event with type {type(event)}")
-                logger.error(f"Event: {event}")
-                yield json.dumps([])
+
+            packed_messages = [message.model_dump() for message in messages]
+            yield json.dumps(packed_messages)
 
     _agent = raw_agent | RunnableGenerator(wrap_output) | ChatCompletionOutputParser()
     return _agent
