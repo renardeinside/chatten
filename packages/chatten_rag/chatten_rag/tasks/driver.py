@@ -1,5 +1,6 @@
-from pathlib import Path
+from pathlib import Path, PosixPath
 import tempfile
+from typing import Any
 from chatten_rag.common import Task
 import mlflow
 from mlflow.models.resources import (
@@ -11,6 +12,28 @@ import yaml
 from chatten.config import Config
 from databricks import agents
 from databricks.sdk import WorkspaceClient
+
+
+def log_agent(
+    agent_path: str, model_config_path: str, input_example: dict[str, Any], vsi: str
+) -> ModelInfo:
+    return mlflow.langchain.log_model(
+        lc_model=agent_path,
+        model_config=model_config_path,
+        pip_requirements=[
+            "databricks-langchain",
+            "langgraph",
+            "langchain-core",
+            "pydantic",
+        ],
+        artifact_path="agent",
+        input_example=input_example,
+        resources=[
+            DatabricksVectorSearchIndex(
+                index_name=vsi,
+            ),
+        ],
+    )
 
 
 class Driver(Task[Config]):
@@ -27,9 +50,15 @@ class Driver(Task[Config]):
         experiment_path = f"/Users/{username}/chatten"
         experiment = mlflow.set_experiment(experiment_path)
 
+        src_agent_path = Path(__file__).parent.parent / "agent.py"
+
         self.logger.info(f"Mlflow experiment set up: {experiment}")
 
-        with tempfile.NamedTemporaryFile() as temp_file:
+        with tempfile.TemporaryDirectory() as _temp_dir:
+            _temp_dir_path = PosixPath(_temp_dir)
+            config_path = _temp_dir_path / "config.yml"
+            dest_agent_path = _temp_dir_path / "agent.py"
+
             _config = yaml.dump(
                 {
                     "chat_endpoint": self.config.chat_endpoint,
@@ -38,37 +67,24 @@ class Driver(Task[Config]):
                 },
                 indent=4,
             )
-            temp_file.write(_config.encode())
+
+            self.logger.info(
+                f"Saving the agent and config to a temporary directory: {_temp_dir}"
+            )
+
+            dest_agent_path.write_text(src_agent_path.read_text())
+            config_path.write_text(_config)
 
             with mlflow.start_run(experiment_id=experiment.experiment_id) as run:
                 self.logger.info(
                     f"Logging the agent to MLflow with name: {run.info.run_name}"
                 )
 
-                agent_path = (
-                    (Path(__file__).parent.parent / "agent.py").resolve().as_posix()
-                )
-
-                self.logger.info(
-                    f"Saving agent using source path: {agent_path} with config path: {temp_file.name}"
-                )
-
-                logged_agent_info: ModelInfo = mlflow.langchain.log_model(
-                    lc_model=agent_path,
-                    model_config=temp_file.name,  # Path to the model config file
-                    pip_requirements=[
-                        "databricks-langchain",
-                        "langgraph",
-                        "langchain-core",
-                        "pydantic",
-                    ],
-                    artifact_path="agent",
-                    input_example=self.INPUT_EXAMPLE,
-                    resources=[
-                        DatabricksVectorSearchIndex(
-                            index_name=self.config.vsi_full_name,
-                        ),
-                    ],
+                logged_agent_info = log_agent(
+                    dest_agent_path.as_posix(),
+                    config_path.as_posix(),
+                    self.INPUT_EXAMPLE,
+                    self.config.vsi_full_name,
                 )
 
         self.logger.info(f"Model logged to MLflow: {logged_agent_info}")
