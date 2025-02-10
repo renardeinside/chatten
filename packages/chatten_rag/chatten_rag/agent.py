@@ -1,7 +1,6 @@
 import json
-from typing import Iterator
 from databricks_langchain import ChatDatabricks
-from mlflow.langchain.output_parsers import ChatCompletionOutputParser
+from mlflow.langchain.output_parsers import ChatAgentOutputParser
 from langgraph.prebuilt import create_react_agent
 from langchain_core.runnables import RunnableLambda
 from langgraph.pregel.io import AddableValuesDict
@@ -41,5 +40,5 @@ def get_agent(chat_model: str, vsi: str, prompt: str):
         packed_messages = [message.model_dump() for message in messages]
         return json.dumps(packed_messages)
 
-    agent = raw_agent | RunnableLambda(wrap_output) | ChatCompletionOutputParser()
+    agent = raw_agent | RunnableLambda(wrap_output) | ChatAgentOutputParser()
     return agent

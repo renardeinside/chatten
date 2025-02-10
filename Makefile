@@ -14,7 +14,9 @@ all-rag: deploy run-rag
 
 build-app:
 	rm -rf ./.build
-	uv build --all-packages --wheel -o ./.build
+	uv build --package chatten --wheel -o ./.build
+	uv build --package chatten_ui --wheel -o ./.build
+	uv build --package chatten_app --wheel -o ./.build
 	cd .build && ls *.whl > requirements.txt
 
 run-app:
