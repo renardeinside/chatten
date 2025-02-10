@@ -20,13 +20,23 @@ class Driver(Task[Config]):
     }
 
     def run(self):
+        self.logger.info("Setting up the MLflow experiment")
+
         username = WorkspaceClient().current_user.me().user_name
         experiment_path = f"/Users/{username}/chatten"
         experiment = mlflow.set_experiment(experiment_path)
 
-        agent = get_agent(self.config)
+        self.logger.info(f"Mlflow experiment set up: {experiment}")
 
-        with mlflow.start_run(experiment_id=experiment.experiment_id):
+        self.logger.info("Getting the agent")
+        agent = get_agent(self.config)
+        self.logger.info(f"Agent loaded: {agent}")
+
+        with mlflow.start_run(experiment_id=experiment.experiment_id) as run:
+            self.logger.info(
+                f"Logging the agent to MLflow with name: {run.info.run_name}"
+            )
+
             logged_agent_info: ModelInfo = mlflow.langchain.log_model(
                 lc_model=agent,
                 pip_requirements=[
@@ -45,7 +55,6 @@ class Driver(Task[Config]):
                         index_name=self.config.vsi_full_name,
                     ),
                 ],
-                infer_code_paths=True,  # Enabling automatic code dependency inference to save chatten code
             )
 
         self.logger.info(f"Model logged to MLflow: {logged_agent_info}")
