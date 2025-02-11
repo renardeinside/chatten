@@ -36,7 +36,7 @@ const useDimensions = (target: React.MutableRefObject<HTMLDivElement>) => {
 export default function PdfViewer({ memoizedPdfPointer, initialPageNumber, textToHighlight }) {
     // this magic is here to make sure PDF stays centered and contained
     const containerRef = useRef<HTMLDivElement>(null);
-    const { height } = useDimensions(containerRef);
+    const { height, width } = useDimensions(containerRef);
 
     const [numPages, setNumPages] = useState<number | null>(null);
     const [pageNumber, setPageNumber] = useState(initialPageNumber);
@@ -57,6 +57,7 @@ export default function PdfViewer({ memoizedPdfPointer, initialPageNumber, textT
                     <Page
                         pageNumber={pageNumber}
                         height={height}
+                        width={width}
                         customTextRenderer={({ str }) => textHighlighter(str)}
                     />
                 </Document>

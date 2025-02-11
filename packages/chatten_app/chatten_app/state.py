@@ -78,7 +78,7 @@ class FileCache:
         with self._lock:
             if path not in self._cache:
                 full_path = self._volume_path / path
-                logger.info(f"Downloading file: {full_path}")
+                logger.info(f"Downloading file: {full_path} from Volume into cache")
                 response: DownloadResponse = self._client.files.download(
                     full_path.as_posix()
                 )
@@ -93,9 +93,9 @@ class FileCache:
                 logger.info(f"File {path} already in cache, skipping download")
 
     def get_as_iterable(
-        self, path: PosixPath, chunk_size: int = 65536
+        self, path: PosixPath, chunk_size: int = 2 * 1024 * 1024
     ) -> Generator[bytes, None, None]:
-        """Returns an iterator with file chunks of size 64KB."""
+        """Returns an iterator with file chunks of size 2MB."""
 
         # retry 2-3 times if file not in cache, usually happens while file is being downloaded
         found = False

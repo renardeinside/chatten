@@ -16,12 +16,13 @@ run-rag:
 		bundle run chatten_rag \
 			--var="catalog=$(catalog)"
 
-all-rag: deploy run-rag
-
+# make sure you're running the app after the RAG pipeline
 run-app:
 	databricks -p $(profile) \
 		bundle run chatten \
 			--var="catalog=$(catalog)"
 
+
+all-rag: deploy run-rag
 all-app: deploy run-app
 

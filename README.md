@@ -2,60 +2,46 @@
 
 RAG with sources, built with Dash, FastAPI and Databricks platform.
 
-## Setup
+## Developer setup
 
+To install the project, following dependencies are required:
+- [uv](https://docs.astral.sh/uv/): for managing the project
+- [Databricks CLI](https://docs.databricks.com/dev-tools/cli/index.html): for deploying the app
+- [Node.js](https://nodejs.org/en/): for building the UI
+
+To install the project, follow these steps:
 1. Clone the repo
-2. Install uv 
 3. Run sync:
 
 ```bash
-uv sync
-```
-
-4. Install frontend dependencies:
-
-```bash
-cd packages/chatten_ui
-npm install
+uv sync --all-packages
 ```
 
 
 Don't forget to configure the environment variables in the `.env` file:
 
 ```bash
-# provide necessary Databricks Authentication details
-DATABRICKS_...
+# name of your Databricks profile
+CHATTEN_PROFILE=... 
 
-# provide service details
-VOLUME_PATH=/Volumes/...
-SERVING_ENDPOINT=name-of-the-endpoint
+# optionally, you can include any bundle or chatten variables like so:
+CHATTEN_CATALOG=...
+
+BUNDLE_VAR_vsi_endpoint=one-env-shared-endpoint-3
 ```
 
 ## Development
 
-1. Install frontend dependencies:
+1. Start the npm watcher in one console:
 
 ```bash
-cd packages/chatten_ui
-npm install
+cd packages/chatten_ui && npm run watch
 ```
 
-2. Run frontend in one console:
+1. Run the server in another console:
 
 ```bash
-npm run watch
-```
-
-3. Run the server in another console:
-
-```bash
-uvicorn chatten.app:app --port 6006 --reload
-```
-
-Prior to running the server, make sure that UI components are generated:
-
-```bash
-cd packages/chatten_ui && npm run build
+ uvicorn chatten_app.app:app --reload
 ```
 
 ## Deployment
@@ -66,44 +52,35 @@ cd packages/chatten_ui && npm run build
 databricks auth login -p <profile-name>
 ```
 
-2. Deploy the app:
+1. Deploy
 
 ```bash
-make all \
-    profile=profile-name \
-    serving_endpoint=name-of-the-endpoint \
-    volume_path=/Volumes/...
+# see makefile for additional variables
+make deploy profile=fe-az-ws catalog=<catalog-name>
 ```
 
-## Serving endpoint requirements
+2. Run RAG workflow
 
-The serving endpoint should return the whole response in one single ChatMessage. The response should be a string-encoded JSON array with the following structure:
-```json
-[
-    {
-        "type": "ai_response",
-        "content": "message content"
-    },
-    {
-        "type": "tool_response",
-        "responses": [
-            {
-                "metadata": {
-                    "file_name": "file.pdf",
-                    "year": 2021,
-                    "chunk_num": 0,
-                    "char_length": 1000
-                },
-                "content": "retrieved text from file"
-            },
-        ]
-    }
-]
+```bash
+# see makefile for additional variables
+make run-rag profile=fe-az-ws catalog=<catalog-name>
 ```
 
-The `/chat` API endpoint will take care of parsing the response and sending the messages to the chat.
+2. Grant app principal access to the Volume
+3. Run the app:
+
+```bash
+make run-app profile=fe-az-ws catalog=<catalog-name>
+```
+
+4. Open the app from Workspace
+
+## Agent serving endpoint response parsing
+
+Check the [api_app](packages/chatten_app/chatten_app/api_app.py) source code for details on how the agent serving endpoint response is parsed.
+Specifically, the `/chat` API endpoint will take care of parsing the response and sending the messages to the chat.
     
-## Implementation details
+## App implementation details
 
 The implementation is based on a FastApi backend, which has two sub-apps:
 1. The `/` route is served by the Dash app, which uses a custom component to render the chat
@@ -119,6 +96,9 @@ The `/api` app communicates with the Databricks Serving endpoint to get chat req
 The code is structured as follows:
 - main package (`chatten`): contains the FastApi app and the Dash app. Main entrypoint is in `/src/chatten/app.py`.
 - UI package (`packages/chatten_ui`): contains the Dash app and the custom Dash component. The Chat code is in `packages/chatten_ui/src/ts/blocks/Chat.tsx`.
+- RAG package (`packages/chatten_rag`): contains the RAG related workflow
+- App package (`packages/chatten_app`): contains the FastApi and Dash apps
+- Common library (`src/chatten`): contains config parsing
 
 
 ## Technologies used 

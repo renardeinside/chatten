@@ -52,10 +52,10 @@ async def chat_with_llm(request: ChatRequest, background_tasks: BackgroundTasks)
         raw_content = result.choices[0].message.content
         response = ChatResponse.from_content(raw_content)
 
-        for source in response.sources:
-            background_tasks.add_task(
-                api_app.state.file_cache.download_file, source.path
-            )
+        # for source in response.sources:
+        #     background_tasks.add_task(
+        #         api_app.state.file_cache.download_file, source.path
+        #     )
 
         return ApiChatResponse(
             content=response.content,
