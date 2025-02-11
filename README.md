@@ -4,6 +4,11 @@ RAG with sources, built with **Dash**, **FastAPI**, and the **Databricks** platf
 
 ---
 
+## 💫 Showcase
+
+Here is an example of the app in action:
+![chatten](assets/showcase.gif)
+
 ## 🛠 Developer Setup
 
 To install the project, ensure you have the following dependencies:
