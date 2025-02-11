@@ -75,6 +75,9 @@ class FileCache:
         self._lock = Lock()
 
     def download_file(self, path: PosixPath) -> None:
+        """
+        Path should be just the file name, not the full path.
+        """
         with self._lock:
             if path not in self._cache:
                 full_path = self._volume_path / path
@@ -127,6 +130,3 @@ class AppState(State):
         logger.info(f"Config: {self.config.model_dump_json(indent=4)}")
         self.client = WorkspaceClient(profile=self.config.profile)
         self.file_cache = FileCache(self.client, self.config.full_raw_docs_path)
-
-
-

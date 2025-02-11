@@ -49,6 +49,9 @@ class Config(BaseSettings):
     # chat endpoint, to be used in the agent
     chat_endpoint: str = "databricks-meta-llama-3-3-70b-instruct"
 
+    # amout of files preloaded in the file cache when app starts
+    max_files_to_preload: int = 10
+
     @property
     def volume_path(self) -> PosixPath:
         # note the /Volumes prefix, leading slash is important!
