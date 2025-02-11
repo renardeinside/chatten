@@ -1,118 +1,145 @@
-# Chatten
+# 🚀 Chatten
 
-RAG with sources, built with Dash, FastAPI and Databricks platform.
+RAG with sources, built with **Dash**, **FastAPI**, and the **Databricks** platform.
 
-## Developer setup
+---
 
-To install the project, following dependencies are required:
-- [uv](https://docs.astral.sh/uv/): for managing the project
-- [Databricks CLI](https://docs.databricks.com/dev-tools/cli/index.html): for deploying the app
-- [Node.js](https://nodejs.org/en/): for building the UI
+## 🛠 Developer Setup
 
-To install the project, follow these steps:
-1. Clone the repo
-3. Run sync:
+To install the project, ensure you have the following dependencies:
 
-```bash
-uv sync --all-packages
-```
+- 📦 [uv](https://docs.astral.sh/uv/): for managing the project
+- 🚀 [Databricks CLI](https://docs.databricks.com/dev-tools/cli/index.html): for deploying the app
+- 🌐 [Node.js](https://nodejs.org/en/): for building the UI
 
+### 📥 Installation Steps
 
-Don't forget to configure the environment variables in the `.env` file:
+1. Clone the repo:
 
-```bash
-# name of your Databricks profile
-CHATTEN_PROFILE=... 
+   ```bash
+   git clone <repo-url>
+   ```
 
-# optionally, you can include any bundle or chatten variables like so:
-CHATTEN_CATALOG=...
+2. Run sync:
 
-BUNDLE_VAR_vsi_endpoint=one-env-shared-endpoint-3
-```
+   ```bash
+   uv sync --all-packages
+   ```
 
-## Development
+3. Configure environment variables in the `.env` file:
 
-1. Start the npm watcher in one console:
+   ```bash
+   # Name of your Databricks profile
+   CHATTEN_PROFILE=...
+   
+   # Optionally, you can include any bundle or Chatten variables:
+   CHATTEN_CATALOG=...
+   
+   BUNDLE_VAR_vsi_endpoint=one-env-shared-endpoint-3
+   ```
 
-```bash
-cd packages/chatten_ui && npm run watch
-```
+---
 
-1. Run the server in another console:
+## 🏗 Development
 
-```bash
- uvicorn chatten_app.app:app --reload
-```
+1. Start the UI watcher in one terminal:
 
-## Deployment
+   ```bash
+   cd packages/chatten_ui && npm run watch
+   ```
+
+2. Run the server in another terminal:
+
+   ```bash
+   uvicorn chatten_app.app:app --reload
+   ```
+
+---
+
+## 🚀 Deployment
 
 1. Authenticate with Databricks:
 
-```bash
-databricks auth login -p <profile-name>
+   ```bash
+   databricks auth login -p <profile-name>
+   ```
+
+2. Deploy the app:
+
+   ```bash
+   # See Makefile for additional variables
+   make deploy profile=fe-az-ws catalog=<catalog-name>
+   ```
+
+3. Run the RAG workflow:
+
+   ```bash
+   # See Makefile for additional variables
+   make run-rag profile=fe-az-ws catalog=<catalog-name>
+   ```
+
+4. Grant app principal access to the Volume.
+5. Run the app:
+
+   ```bash
+   make run-app profile=fe-az-ws catalog=<catalog-name>
+   ```
+
+6. Open the app from **Databricks Workspace** 🎉
+
+---
+
+## 🤖 Agent Serving Endpoint Response Parsing
+
+Check the [`api_app`](packages/chatten_app/chatten_app/api_app.py) source code for details on how the agent serving endpoint response is parsed.
+
+Specifically, the `/chat` API endpoint handles:
+- Parsing responses
+- Sending messages to the chat interface
+
+---
+
+## 🏛 App Implementation Details
+
+The implementation consists of a **FastAPI** backend with two sub-apps:
+
+1. **Dash app (`/` route)**: Uses a custom component to render the chat UI.
+2. **FastAPI app (`/api` route)**: Provides API endpoints for the chat.
+
+The chat is implemented as a **custom Dash component**, which is a React-based UI element that communicates with the FastAPI backend.
+
+The `/api` app interacts with the **Databricks Serving Endpoint** to handle chat requests and responses. Another route is responsible for serving PDF files from **Databricks Volume**.
+
+---
+
+## 📂 Code Structure
+
+```
+📦 chatten  # Main package (FastAPI + Dash app)
+ ┣ 📂 packages/chatten_ui  # Dash UI & custom chat component
+ ┣ 📂 packages/chatten_rag  # RAG workflow implementation
+ ┣ 📂 packages/chatten_app  # FastAPI & Dash apps
+ ┣ 📂 src/chatten  # Common config & utilities
+ ┣ 📂 src/chatten/app.py  # Main entry point
 ```
 
-1. Deploy
+---
 
-```bash
-# see makefile for additional variables
-make deploy profile=fe-az-ws catalog=<catalog-name>
-```
+## 🏗 Technologies Used
 
-2. Run RAG workflow
+### 🔥 Core Platform
+- [Databricks](https://databricks.com/)
+  - [Apps](https://www.databricks.com/product/databricks-apps) - App serving
+  - [Asset Bundles](https://docs.databricks.com/en/dev-tools/bundles/index.html) - Deployment
+  - [Mosaic AI Model Serving](https://docs.databricks.com/en/machine-learning/model-serving/index.html) - Model serving
+  - [Mosaic AI Vector Search](https://docs.databricks.com/en/generative-ai/vector-search.html) - Vector search
 
-```bash
-# see makefile for additional variables
-make run-rag profile=fe-az-ws catalog=<catalog-name>
-```
-
-2. Grant app principal access to the Volume
-3. Run the app:
-
-```bash
-make run-app profile=fe-az-ws catalog=<catalog-name>
-```
-
-4. Open the app from Workspace
-
-## Agent serving endpoint response parsing
-
-Check the [api_app](packages/chatten_app/chatten_app/api_app.py) source code for details on how the agent serving endpoint response is parsed.
-Specifically, the `/chat` API endpoint will take care of parsing the response and sending the messages to the chat.
-    
-## App implementation details
-
-The implementation is based on a FastApi backend, which has two sub-apps:
-1. The `/` route is served by the Dash app, which uses a custom component to render the chat
-2. The `/api` route is served by the FastApi app, which provides the API for the chat
-
-The chat is implemented as a custom Dash component, which is a React component that communicates with the FastApi backend.
-
-The `/api` app communicates with the Databricks Serving endpoint to get chat requests and responses. Another route on the `/api` app is used to serve PDF files from the Databricks Volume.
-
-
-## Code structure
-
-The code is structured as follows:
-- main package (`chatten`): contains the FastApi app and the Dash app. Main entrypoint is in `/src/chatten/app.py`.
-- UI package (`packages/chatten_ui`): contains the Dash app and the custom Dash component. The Chat code is in `packages/chatten_ui/src/ts/blocks/Chat.tsx`.
-- RAG package (`packages/chatten_rag`): contains the RAG related workflow
-- App package (`packages/chatten_app`): contains the FastApi and Dash apps
-- Common library (`src/chatten`): contains config parsing
-
-
-## Technologies used 
-
-- [Databricks](https://databricks.com/): Databricks platform
-  - [Databricks Apps](https://www.databricks.com/product/databricks-apps) - app serving
-  - [Databricks Asset Bundles](https://docs.databricks.com/en/dev-tools/bundles/index.html) - deployment
-  - [Mosaic AI Model Serving](https://docs.databricks.com/en/machine-learning/model-serving/index.html) - model serving
-  - [Mosaic AI Vector Search](https://docs.databricks.com/en/generative-ai/vector-search.html) - vector search
-- [Dash](https://dash.plotly.com/): for the UI
-- [FastApi](https://fastapi.tiangolo.com/): for the backend
-- [Tailwind CSS](https://tailwindcss.com/): for styling
-- [react-pdf](https://github.com/wojtekmaj/react-pdf): for rendering PDFs
-- [Fuse.js](https://www.fusejs.io/): client-side fuzzy search in PDFs
-- [pypdf](https://pypdf.readthedocs.io/en/stable/): for extracting text from PDFs on server side
-- [RapidFuzz](https://pypi.org/project/RapidFuzz/): for fuzzy string matching on server side
-- [uv](https://docs.astral.sh/uv/): managing the project
+### 🏗 Frameworks & Libraries
+- 🖥 [Dash](https://dash.plotly.com/) - UI framework
+- ⚡ [FastAPI](https://fastapi.tiangolo.com/) - Backend API
+- 🎨 [Tailwind CSS](https://tailwindcss.com/) - Styling
+- 📄 [react-pdf](https://github.com/wojtekmaj/react-pdf) - PDF rendering
+- 🔍 [Fuse.js](https://www.fusejs.io/) - Client-side fuzzy search
+- 📜 [pypdf](https://pypdf.readthedocs.io/en/stable/) - Server-side PDF text extraction
+- ⚡ [RapidFuzz](https://pypi.org/project/RapidFuzz/) - Fuzzy string matching
+- 📦 [uv](https://docs.astral.sh/uv/) - Dependency management
