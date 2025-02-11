@@ -84,7 +84,7 @@ class Driver(Task[Config]):
                     agent_path=dest_agent_path.as_posix(),
                     model_config_path=config_path.as_posix(),
                     input_example=self.INPUT_EXAMPLE,
-                    vsi=self.config.vsi_full_name,
+                    vsi=self.config.vsi_with_catalog,
                 )
 
         self.logger.info(f"Model logged to MLflow: {logged_agent_info}")
@@ -93,15 +93,15 @@ class Driver(Task[Config]):
         mlflow.set_registry_uri("databricks-uc")
 
         self.logger.info(
-            f"Registering the model with the UC registry: {self.config.agent_serving_endpoint_full}"
+            f"Registering the model with the UC registry: {self.config.agent_serving_endpoint_with_catalog}"
         )
         registered_model_info = mlflow.register_model(
-            logged_agent_info.model_uri, self.config.agent_serving_endpoint_full
+            logged_agent_info.model_uri, self.config.agent_serving_endpoint_with_catalog
         )
 
         self.logger.info("Creating the agent serving endpoint")
         result = agents.deploy(
-            self.config.agent_serving_endpoint_full, registered_model_info.version
+            self.config.agent_serving_endpoint_with_catalog, registered_model_info.version
         )
 
         self.logger.info(

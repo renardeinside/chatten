@@ -11,15 +11,15 @@ def main():
 
     client = WorkspaceClient(profile=config.profile)
 
-    logger.info(f"Deleting the docs table: {config.docs_full_name}")
+    logger.info(f"Deleting the docs table: {config.docs_with_catalog}")
     try:
-        client.tables.delete(config.docs_full_name)
+        client.tables.delete(config.docs_with_catalog)
     except Exception as e:
         logger.error(f"Error deleting the docs table: {e}")
 
-    logger.info(f"Deleting the vector search index: {config.vsi_full_name}")
+    logger.info(f"Deleting the vector search index: {config.vsi_with_catalog}")
     try:
-        client.vector_search_indexes.delete_index(config.vsi_full_name)
+        client.vector_search_indexes.delete_index(config.vsi_with_catalog)
     except Exception as e:
         logger.error(f"Error deleting the vector search index: {e}")
 

@@ -33,10 +33,10 @@ class Indexer(Task[IndexerConfig]):
                 name=self.config.vsi_endpoint,
             )
 
-        self.logger.info(f"Checking the vsi index @ {self.config.vsi_full_name}")
+        self.logger.info(f"Checking the vsi index @ {self.config.vsi_with_catalog}")
 
         try:
-            index = client.get_index(index_name=self.config.vsi_full_name)
+            index = client.get_index(index_name=self.config.vsi_with_catalog)
             self.logger.info(f"Index {self.config.vsi} found.")
         except Exception:
             self.logger.info(
@@ -45,8 +45,8 @@ class Indexer(Task[IndexerConfig]):
 
             index = client.create_delta_sync_index_and_wait(
                 endpoint_name=self.config.vsi_endpoint,
-                source_table_name=self.config.docs_full_name,
-                index_name=self.config.vsi_full_name,
+                source_table_name=self.config.docs_with_catalog,
+                index_name=self.config.vsi_with_catalog,
                 pipeline_type="TRIGGERED",
                 primary_key="chunk_uuid",
                 embedding_source_column="chunk_text",
@@ -58,11 +58,11 @@ class Indexer(Task[IndexerConfig]):
             )
 
         self.logger.info(
-            f"Waiting for index {self.config.vsi_full_name} to be ready..."
+            f"Waiting for index {self.config.vsi_with_catalog} to be ready..."
         )
         index.wait_until_ready()
 
-        self.logger.info(f"Index {self.config.vsi_full_name} is ready, syncing it...")
+        self.logger.info(f"Index {self.config.vsi_with_catalog} is ready, syncing it...")
 
         max_attempts = 5
 
@@ -81,4 +81,4 @@ class Indexer(Task[IndexerConfig]):
 
         sync_with_retries()
 
-        self.logger.info(f"Index {self.config.vsi_full_name} sync complete.")
+        self.logger.info(f"Index {self.config.vsi_with_catalog} sync complete.")

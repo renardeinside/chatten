@@ -87,7 +87,7 @@ class Loader(Task[Config]):
         source_path = "dbfs:" + self.config.full_raw_docs_path.as_posix()
 
         self.logger.info(
-            f"Processing files into docs table {self.config.docs_full_name} from {source_path}"
+            f"Processing files into docs table {self.config.docs_with_catalog} from {source_path}"
         )
 
         df = (
@@ -109,18 +109,18 @@ class Loader(Task[Config]):
                 self.config.full_raw_docs_checkpoint_location,
             )
             .option("mergeSchema", "true")
-            .toTable(self.config.docs_full_name)
+            .toTable(self.config.docs_with_catalog)
         )
 
         query.awaitTermination()
 
         enable_cdf = f"""
-        ALTER TABLE {self.config.docs_full_name} 
+        ALTER TABLE {self.config.docs_with_catalog} 
             SET TBLPROPERTIES (delta.enableChangeDataFeed = true)
         """
         self.spark.sql(enable_cdf)
 
-        self.logger.info(f"Finished processing files into {self.config.docs_full_name}")
+        self.logger.info(f"Finished processing files into {self.config.docs_with_catalog}")
 
     def run(self):
         self.logger.info(

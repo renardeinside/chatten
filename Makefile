@@ -1,6 +1,12 @@
 
+build-app:
+	rm -rf ./.build
+	uv build --package chatten --wheel -o ./.build
+	uv build --package chatten_ui --wheel -o ./.build
+	uv build --package chatten_app --wheel -o ./.build
+	cd .build && ls *.whl > requirements.txt
 
-deploy:
+deploy: build-app
 	databricks -p $(profile) \
 		bundle deploy \
 			--var="catalog=$(catalog)"
@@ -12,17 +18,10 @@ run-rag:
 
 all-rag: deploy run-rag
 
-build-app:
-	rm -rf ./.build
-	uv build --package chatten --wheel -o ./.build
-	uv build --package chatten_ui --wheel -o ./.build
-	uv build --package chatten_app --wheel -o ./.build
-	cd .build && ls *.whl > requirements.txt
-
 run-app:
 	databricks -p $(profile) \
 		bundle run chatten \
 			--var="catalog=$(catalog)"
 
-all-app: build-app deploy run-app
+all-app: deploy run-app
 

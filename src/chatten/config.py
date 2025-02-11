@@ -36,7 +36,6 @@ class Config(BaseSettings):
 
     # checkpoint locations in the volume
     raw_docs_checkpoint_location: PosixPath = PosixPath("checkpoints/raw")
-    processed_docs_checkpoint_location: PosixPath = PosixPath("checkpoints/processed")
 
     # table names
     docs_table: str = "docs"
@@ -66,22 +65,23 @@ class Config(BaseSettings):
         )
 
     @property
-    def vsi_full_name(self):
+    def vsi_with_catalog(self):
         return f"{self.catalog}.{self.db}.{self.vsi}"
 
     @property
-    def docs_full_name(self):
+    def docs_with_catalog(self):
         return f"{self.catalog}.{self.db}.{self.docs_table}"
 
     @property
-    def agent_serving_endpoint_full(self):
+    def agent_serving_endpoint_with_catalog(self):
         return f"{self.catalog}.{self.db}.{self.agent_serving_endpoint}"
 
     @property
     def as_model_config(self):
+        # used to serialize the model_config into a tempfile for mlflow
         return {
             "chat_endpoint": self.chat_endpoint,
-            "vsi": self.vsi_full_name,
+            "vsi": self.vsi_with_catalog,
             "PROMPT": self.PROMPT,
         }
 
