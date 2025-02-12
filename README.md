@@ -44,7 +44,8 @@ To install the project, ensure you have the following dependencies:
    # Optionally, you can include any bundle or Chatten variables:
    CHATTEN_CATALOG=...
    
-   BUNDLE_VAR_vsi_endpoint=one-env-shared-endpoint-3
+   # Optionally, by check default values in databricks.yml
+   BUNDLE_VAR_vsi_endpoint=...
    ```
 
 ---
