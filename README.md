@@ -7,7 +7,11 @@ RAG with sources, built with **Dash**, **FastAPI**, and the **Databricks** platf
 ## 💫 Showcase
 
 Here is an example of the app in action:
-![chatten](assets/showcase.gif)
+
+<div style="text-align: center;">
+  <img src="assets/showcase.gif" alt="chatten" style="max-width: 800px; height: auto;">
+</div>
+
 
 ## 🛠 Developer Setup
 
