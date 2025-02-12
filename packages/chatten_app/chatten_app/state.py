@@ -1,4 +1,5 @@
 from cachetools import TTLCache
+from chatten_app.models import ApiChatResponse, ChatRequest
 from databricks.sdk import WorkspaceClient
 from databricks.sdk.service.files import DownloadResponse
 from pypdf import PdfReader
@@ -118,6 +119,24 @@ class FileCache:
 
         return iter(functools.partial(content.as_io.read, chunk_size), b"")
 
+class ResponsesCache:
+    def __init__(self):
+        self._responses: TTLCache[ChatRequest, ApiChatResponse] = TTLCache(maxsize=100, ttl=60*2)  # 2 minutes
+        self._lock = Lock()
+
+    def __contains__(self, request: ChatRequest) -> bool:
+        with self._lock:
+            result = request in self._responses
+            logger.info(f"Checking if request {request} is in cache, actual {result}")
+            return result
+
+    def get(self, request: ChatRequest) -> ApiChatResponse:
+        with self._lock:
+            return self._responses.get(request, None)
+
+    def set(self, request: ChatRequest, response: ApiChatResponse) -> None:
+        with self._lock:
+            self._responses[request] = response
 
 class AppState(State):
     """State class for storing the client and file cache.
@@ -130,3 +149,4 @@ class AppState(State):
         logger.info(f"Config: {self.config.model_dump_json(indent=4)}")
         self.client = WorkspaceClient(profile=self.config.profile)
         self.file_cache = FileCache(self.client, self.config.full_raw_docs_path)
+        self.responses_cache = ResponsesCache()

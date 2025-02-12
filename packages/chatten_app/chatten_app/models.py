@@ -9,6 +9,14 @@ from typing import Literal, Annotated, Any
 class ChatRequest(BaseModel):
     message: str
 
+    def __hash__(self):
+        return hash(self.message)
+
+    def __eq__(self, other):
+        if isinstance(other, ChatRequest):
+            return self.message == other.message
+        return False
+
 
 class ApiChatMetadata(BaseModel):
     content: str

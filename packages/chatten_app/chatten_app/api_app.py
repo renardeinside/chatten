@@ -33,30 +33,39 @@ api_app = StatefulApp()
 @api_app.post("/chat", response_model=ApiChatResponse)
 async def chat_with_llm(request: ChatRequest, background_tasks: BackgroundTasks):
 
-    logger.info(
-        f"Received message: {request.message}, using endpoint: {api_app.state.config.agent_serving_endpoint_name}"
-    )
+    if request in api_app.state.responses_cache:
+        logger.info(f"Request {request} found in cache, returning cached response")
+        return api_app.state.responses_cache.get(request)
 
-    result = api_app.state.client.serving_endpoints.query(
-        name=api_app.state.config.agent_serving_endpoint_name,
-        max_tokens=250,
-        messages=[
-            ChatMessage(
-                content=request.message,
-                role=ChatMessageRole.USER,
-            )
-        ],
-    )
-    try:
-        # all content is in the first choice, packed in a JSON serialized string
-        raw_content = result.choices[0].message.content
-        response = ChatResponse.from_content(raw_content)
+    else:
+
+        logger.info(
+            f"Received message: {request.message}, using endpoint: {api_app.state.config.agent_serving_endpoint_name}"
+        )
+
+        result = api_app.state.client.serving_endpoints.query(
+            name=api_app.state.config.agent_serving_endpoint_name,
+            max_tokens=250,
+            messages=[
+                ChatMessage(
+                    content=request.message,
+                    role=ChatMessageRole.USER,
+                )
+            ],
+        )
+        try:
+            # all content is in the first choice, packed in a JSON serialized string
+            raw_content = result.choices[0].message.content
+            response = ChatResponse.from_content(raw_content)
+
+        except Exception as e:
+            return JSONResponse(status_code=500, content={"error": str(e)})
 
         unique_paths = set(source.path for source in response.sources)
         for path in unique_paths:
             background_tasks.add_task(api_app.state.file_cache.download_file, path)
 
-        return ApiChatResponse(
+        prepared_response = ApiChatResponse(
             content=response.content,
             metadata=[
                 ApiChatMetadata(content=source.query, file_name=source.path)
@@ -64,10 +73,9 @@ async def chat_with_llm(request: ChatRequest, background_tasks: BackgroundTasks)
             ],
         )
 
-    except Exception as e:
-        logger.error(f"Error parsing response: {e}")
-        logger.error(f"Raw response: {result}")
-        return JSONResponse(status_code=500, content={"error": str(e)})
+        api_app.state.responses_cache.set(request, prepared_response)
+
+        return prepared_response
 
 
 @api_app.get("/files")
