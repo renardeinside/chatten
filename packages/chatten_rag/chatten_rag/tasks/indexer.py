@@ -10,7 +10,7 @@ class IndexerConfig(Config):
     vsi_endpoint: str
 
     # embedding model endpoint
-    embeddings_endpoint: str = "databricks-bge-large-en"
+    embeddings_endpoint: str = "databricks-gte-large-en"
 
 
 class Indexer(Task[IndexerConfig]):
