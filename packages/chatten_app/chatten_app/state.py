@@ -97,9 +97,9 @@ class FileCache:
                 logger.info(f"File {path} already in cache, skipping download")
 
     def get_as_iterable(
-        self, path: PosixPath, chunk_size: int = 2 * 1024 * 1024
+        self, path: PosixPath, chunk_size: int = 10 * 1024 * 1024
     ) -> Generator[bytes, None, None]:
-        """Returns an iterator with file chunks of size 2MB."""
+        """Returns an iterator with file chunks."""
 
         # retry 2-3 times if file not in cache, usually happens while file is being downloaded
         found = False
